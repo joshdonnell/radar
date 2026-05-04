@@ -20,6 +20,6 @@ final class RadarServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->singleton(Radar::class, fn () => new Radar);
+        $this->app->singleton(Radar::class, fn (): Radar => new Radar);
     }
 }
