@@ -65,15 +65,5 @@ jobs:
           composer require "orchestra/testbench:${{ env.TESTBENCH }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
-      - name: Cache PHPStan
-        uses: actions/cache@v4
-        with:
-          path: /tmp/phpstan
-          key: ${{ runner.os }}-phpstan-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
-          restore-keys: ${{ runner.os }}-phpstan-${{ matrix.php }}-
-
-      - name: Create Cache Directories
-        run: mkdir -p /tmp/phpstan
-
-      - name: Run Tests
-        run: composer test
+      - name: Unit Tests
+        run: composer test:unit

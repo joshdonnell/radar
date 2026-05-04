@@ -1,0 +1,65 @@
+name: formats
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    name: Formats
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-8.3-prefer-stable-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-8.3-
+            ${{ runner.os }}-composer-
+
+      - name: Install Dependencies
+        run: composer update --prefer-stable --prefer-dist --no-interaction --no-progress
+
+      - name: Cache PHPStan
+        uses: actions/cache@v4
+        with:
+          path: /tmp/phpstan
+          key: ${{ runner.os }}-phpstan-8.3-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-phpstan-8.3-
+
+      - name: Create Cache Directories
+        run: mkdir -p /tmp/phpstan
+
+      - name: Lint Checks
+        run: composer test:lint
+
+      - name: Type Checks
+        run: composer test:types
+
+      - name: Type Coverage Checks
+        run: composer test:type-coverage
+
+      - name: Refactor Checks
+        run: composer test:refactor

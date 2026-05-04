@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar;
 
-use JoshDonnell\Radar\Commands\RadarCommand;
+use JoshDonnell\Radar\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -15,7 +15,8 @@ final class RadarServiceProvider extends PackageServiceProvider
         $package
             ->name('radar')
             ->hasConfigFile()
-            ->hasCommand(RadarCommand::class);
+            ->hasMigration('create_radar_scans_table')
+            ->hasCommand(InstallCommand::class);
     }
 
     public function packageRegistered(): void

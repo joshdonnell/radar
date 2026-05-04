@@ -3,5 +3,6 @@ vendor/
 .DS_Store
 .claude/
 node_modules/
-phpunit.xml.dist
+phpunit.xml
+phpstan.neon
 tmp/
