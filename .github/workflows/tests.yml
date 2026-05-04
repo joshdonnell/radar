@@ -65,13 +65,6 @@ jobs:
           composer require "orchestra/testbench:${{ env.TESTBENCH }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
-      - name: Cache Rector
-        uses: actions/cache@v4
-        with:
-          path: /tmp/rector
-          key: ${{ runner.os }}-rector-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
-          restore-keys: ${{ runner.os }}-rector-${{ matrix.php }}-
-
       - name: Cache PHPStan
         uses: actions/cache@v4
         with:
@@ -80,7 +73,7 @@ jobs:
           restore-keys: ${{ runner.os }}-phpstan-${{ matrix.php }}-
 
       - name: Create Cache Directories
-        run: mkdir -p /tmp/rector /tmp/phpstan
+        run: mkdir -p /tmp/phpstan
 
       - name: Run Tests
         run: composer test
