@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar;
 
+use JoshDonnell\Radar\Commands\RadarCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use JoshDonnell\Radar\Commands\RadarCommand;
 
 final class RadarServiceProvider extends PackageServiceProvider
 {
