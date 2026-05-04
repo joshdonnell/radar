@@ -6,3 +6,5 @@ node_modules/
 phpunit.xml
 phpstan.neon
 tmp/
+/workbench
+testbench.yaml

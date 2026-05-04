@@ -3,7 +3,8 @@
   "notPath": [
     "configure.php",
     "tests/TestCase.php",
-    "tmp"
+    "tmp",
+    "workbench"
   ],
   "rules": {
     "array_push": true,

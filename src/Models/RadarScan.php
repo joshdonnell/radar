@@ -6,7 +6,9 @@ namespace JoshDonnell\Radar\Models;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use JoshDonnell\Radar\Database\Factories\RadarScanFactory;
 
 /**
  * @property-read string $id
@@ -18,6 +20,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class RadarScan extends Model
 {
+    /** @use HasFactory<RadarScanFactory> */
+    use HasFactory;
+
     use HasUuids;
 
     /**

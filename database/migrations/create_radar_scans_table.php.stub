@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Get the migration connection name.
-     */
     public function getConnection(): ?string
     {
         $connection = config('radar.storage.database.connection');
@@ -18,9 +15,6 @@ return new class extends Migration
         return is_string($connection) ? $connection : null;
     }
 
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::connection($this->getConnection())->create('radar_scans', function (Blueprint $table): void {
@@ -31,13 +25,5 @@ return new class extends Migration
             $table->json('payload');
             $table->timestamp('created_at')->nullable()->index();
         });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::connection($this->getConnection())->dropIfExists('radar_scans');
     }
 };
