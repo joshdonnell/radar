@@ -1,0 +1,7 @@
+vendor/
+.idea/
+.DS_Store
+.claude/
+node_modules/
+phpunit.xml.dist
+tmp/
