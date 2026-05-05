@@ -10,6 +10,6 @@ final class DashboardController
 {
     public function __invoke(): View
     {
-        return view('radar::dashboard');
+        return view()->make('radar::dashboard');
     }
 }
