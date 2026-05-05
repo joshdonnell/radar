@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar\Database\Factories;
 
+use Illuminate\Database\Eloquent\Factories\Attributes\UseModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use JoshDonnell\Radar\Models\RadarScan;
 
+#[UseModel(RadarScan::class)]
 final class RadarScanFactory extends Factory
 {
-    protected $model = RadarScan::class;
-
     public function definition(): array
     {
         return [

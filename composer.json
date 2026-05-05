@@ -51,10 +51,7 @@
         }
     },
     "scripts": {
-        "post-autoload-dump": [
-            "@clear",
-            "@prepare"
-        ],
+        "post-autoload-dump": "@prepare",
         "prepare": "@php vendor/bin/testbench package:discover --ansi",
         "post-update-cmd": [
             "@update:requirements"
@@ -65,14 +62,14 @@
             "rector"
         ],
         "lint:rector": "rector",
-        "test:type-coverage": "pest --type-coverage --min=100",
         "test:lint": [
             "pint --parallel --test",
             "rector --dry-run"
         ],
         "test:refactor": "rector --dry-run",
-        "test:unit": "pest --parallel --coverage",
-        "test:types": "phpstan",
+        "test:unit": "pest --coverage",
+        "test:type-coverage": "pest --type-coverage",
+        "test:types": "phpstan --memory-limit=2G",
         "test": [
             "@test:lint",
             "@test:types",
@@ -83,7 +80,6 @@
             "@build",
             "@php vendor/bin/testbench serve --ansi"
         ],
-        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
         "build": "@php vendor/bin/testbench workbench:build --ansi"
     },
     "config": {
@@ -97,10 +93,7 @@
         "laravel": {
             "providers": [
                 "JoshDonnell\\Radar\\RadarServiceProvider"
-            ],
-            "aliases": {
-                "Radar": "JoshDonnell\\Radar\\Facades\\Radar"
-            }
+            ]
         }
     },
     "minimum-stability": "dev",

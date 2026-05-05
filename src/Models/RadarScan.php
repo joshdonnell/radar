@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace JoshDonnell\Radar\Models;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ use JoshDonnell\Radar\Database\Factories\RadarScanFactory;
  * @property-read array<string, mixed> $payload
  * @property-read CarbonImmutable|null $created_at
  */
+#[UseFactory(RadarScanFactory::class)]
 final class RadarScan extends Model
 {
     /** @use HasFactory<RadarScanFactory> */

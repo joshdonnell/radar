@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use JoshDonnell\Radar\Actions\CreateScanResultAction;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -40,6 +42,20 @@ return [
         'database' => [
             'connection' => env('RADAR_DB_CONNECTION', env('DB_CONNECTION', 'sqlite')),
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Actions
+    |--------------------------------------------------------------------------
+    |
+    | These actions make Radar's internals replaceable without introducing a
+    | heavier plugin or repository layer.
+    |
+    */
+
+    'actions' => [
+        'store_scan_result' => CreateScanResultAction::class,
     ],
 
     /*

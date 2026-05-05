@@ -41,6 +41,14 @@ jobs:
           tools: composer:v2
           coverage: xdebug
 
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: 24
+
+      - name: Install Node Dependencies
+        run: npm ci
+
       - name: Set Laravel Testbench Version
         run: |
           case "${{ matrix.laravel }}" in
@@ -64,6 +72,9 @@ jobs:
         run: |
           composer require "orchestra/testbench:${{ env.TESTBENCH }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+
+      - name: Build Assets
+        run: npm run build
 
       - name: Unit Tests
         run: composer test:unit

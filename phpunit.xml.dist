@@ -23,4 +23,7 @@
             <directory>src</directory>
         </include>
     </source>
+    <php>
+        <env name="RADAR_DB_CONNECTION" value="null"/>
+    </php>
 </phpunit>

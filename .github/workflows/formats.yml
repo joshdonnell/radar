@@ -30,6 +30,14 @@ jobs:
           tools: composer:v2
           coverage: none
 
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: 24
+
+      - name: Install Node Dependencies
+        run: npm ci
+
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
@@ -42,6 +50,15 @@ jobs:
       - name: Install Dependencies
         run: composer update --prefer-stable --prefer-dist --no-interaction --no-progress
 
+      - name: Build Assets
+        run: npm run build
+
+      - name: Node Lint Checks
+        run: npm run test:lint
+
+      - name: Node Type Checks
+        run: npm run test:types
+
       - name: Cache PHPStan
         uses: actions/cache@v4
         with:
@@ -50,16 +67,16 @@ jobs:
           restore-keys: ${{ runner.os }}-phpstan-8.3-
 
       - name: Create Cache Directories
-        run: mkdir -p /tmp/phpstan
+        run: mkdir -p /tmp/phpstan /tmp/rector
 
-      - name: Lint Checks
+      - name: PHP Lint Checks
         run: composer test:lint
 
-      - name: Type Checks
+      - name: PHP Type Checks
         run: composer test:types
 
-      - name: Type Coverage Checks
+      - name: PHP Type Coverage Checks
         run: composer test:type-coverage
 
-      - name: Refactor Checks
+      - name: PHP Refactor Checks
         run: composer test:refactor
