@@ -46,7 +46,7 @@ final class Config
             return 'radar';
         }
 
-        return (string) mb_trim($path, '/');
+        return trim($path, '/');
     }
 
     /**
