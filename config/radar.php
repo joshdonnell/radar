@@ -37,7 +37,7 @@ return [
     */
 
     'dashboard' => [
-        'enabled' => env('RADAR_DASHBOARD_ENABLED', ! app()->isProduction()),
+        'enabled' => env('RADAR_DASHBOARD_ENABLED'),
     ],
 
     /*
@@ -115,12 +115,20 @@ return [
     | Notifications
     |--------------------------------------------------------------------------
     |
-    | Radar may notify you when security vulnerabilities are found.
+    | Radar may notify you when security vulnerabilities are found. By default,
+    | Radar registers a scheduled nightly `radar:notify --scan` run. Make sure
+    | your application has Laravel's scheduler running in production.
     |
     */
 
     'notifications' => [
         'dedupe_ttl' => env('RADAR_NOTIFICATION_DEDUPE_TTL', 86400),
+
+        'schedule' => [
+            'enabled' => env('RADAR_NOTIFICATION_SCHEDULE_ENABLED', true),
+            'time' => env('RADAR_NOTIFICATION_SCHEDULE_TIME', '02:00'),
+            'timezone' => env('RADAR_NOTIFICATION_SCHEDULE_TIMEZONE'),
+        ],
 
         'routes' => [
             'mail' => array_values(array_filter(explode(',', (string) env('RADAR_NOTIFICATION_MAIL_TO', '')))),

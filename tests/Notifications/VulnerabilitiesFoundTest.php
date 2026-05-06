@@ -33,17 +33,34 @@ it('sends via the configured notification channels', function (): void {
     });
 });
 
-it('builds a useful mail notification', function (): void {
+it('builds a styled mail notification', function (): void {
     $mail = vulnerabilitiesFound(channels: ['mail'])->toMail(new AnonymousNotifiable());
 
     expect($mail)
         ->subject->toBe('[Radar] 2 vulnerabilities detected')
-        ->actionText->toBe('View in Radar')
-        ->actionUrl->toBe('https://example.com/radar')
-        ->and($mail->introLines)->toContain(
-            'Radar detected **2 vulnerabilities** in your project dependencies during scan `scan-abc-123`.',
-            'Breakdown: 1 critical, 1 high, 0 medium, 0 low, 0 unknown.',
-        );
+        ->view->toBe([
+            'html' => 'radar::emails.vulnerabilities-found',
+            'text' => 'radar::emails.vulnerabilities-found-text',
+        ])
+        ->and($mail->viewData)
+        ->toMatchArray([
+            'total' => 2,
+            'pluralizedVulnerability' => 'vulnerabilities',
+            'dashboardUrl' => 'https://example.com/radar',
+        ])
+        ->and($mail->viewData['counts'])->toBe([
+            'critical' => 1,
+            'high' => 1,
+            'medium' => 0,
+            'low' => 0,
+            'unknown' => 0,
+        ]);
+});
+
+it('omits the dashboard action when no dashboard url is available', function (): void {
+    $mail = vulnerabilitiesFound(channels: ['mail'], dashboardUrl: null)->toMail(new AnonymousNotifiable());
+
+    expect($mail->viewData['dashboardUrl'])->toBeNull();
 });
 
 it('builds a useful slack notification', function (): void {
@@ -56,12 +73,13 @@ it('builds a useful slack notification', function (): void {
         ->and($attachment)
         ->not->toBeNull()
         ->title->toBe('Scan Details')
-        ->content->toContain('Scan `scan-abc-123` found 2 vulnerabilities')
+        ->content->toContain('Found 2 vulnerabilities')
+        ->content->not->toContain('scan-abc-123')
         ->actions->toHaveCount(1);
 });
 
 /** @param list<'mail'|'slack'> $channels */
-function vulnerabilitiesFound(array $channels): VulnerabilitiesFound
+function vulnerabilitiesFound(array $channels, ?string $dashboardUrl = 'https://example.com/radar'): VulnerabilitiesFound
 {
     return new VulnerabilitiesFound(
         notification: new VulnerabilityNotificationData(
@@ -86,7 +104,7 @@ function vulnerabilitiesFound(array $channels): VulnerabilitiesFound
                     isDirect: false,
                 ),
             ],
-            dashboardUrl: 'https://example.com/radar',
+            dashboardUrl: $dashboardUrl,
         ),
         channels: $channels,
     );

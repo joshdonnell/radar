@@ -20,3 +20,11 @@ it('always includes the radar authorization middleware', function (): void {
 it('publishes a command timeout', function (): void {
     expect(config('radar.command_timeout'))->toBe(60);
 });
+
+it('preconfigures nightly notification scans', function (): void {
+    expect(config('radar.notifications.schedule'))->toMatchArray([
+        'enabled' => true,
+        'time' => '02:00',
+        'timezone' => null,
+    ]);
+});

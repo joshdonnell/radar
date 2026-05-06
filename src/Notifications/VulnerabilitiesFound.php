@@ -28,35 +28,12 @@ final class VulnerabilitiesFound extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $counts = $this->notification->severityCounts();
-        $total = count($this->notification->vulnerabilities);
-
-        $message = (new MailMessage())
-            ->subject(sprintf(
-                '[Radar] %d vulnerabilit%s detected',
-                $total,
-                $total === 1 ? 'y' : 'ies',
-            ))
-            ->line(sprintf(
-                'Radar detected **%d vulnerabilit%s** in your project dependencies during scan `%s`.',
-                $total,
-                $total === 1 ? 'y' : 'ies',
-                $this->notification->scanId,
-            ))
-            ->line(sprintf(
-                'Breakdown: %d critical, %d high, %d medium, %d low, %d unknown.',
-                $counts['critical'],
-                $counts['high'],
-                $counts['medium'],
-                $counts['low'],
-                $counts['unknown'],
-            ));
-
-        if ($this->notification->dashboardUrl !== null) {
-            $message->action('View in Radar', $this->notification->dashboardUrl);
-        }
-
-        return $message;
+        return (new MailMessage())
+            ->subject($this->subject())
+            ->view([
+                'html' => 'radar::emails.vulnerabilities-found',
+                'text' => 'radar::emails.vulnerabilities-found-text',
+            ], $this->mailViewData());
     }
 
     public function toSlack(object $notifiable): SlackMessage
@@ -75,8 +52,7 @@ final class VulnerabilitiesFound extends Notification
                 $attachment
                     ->title('Scan Details')
                     ->content(sprintf(
-                        'Scan `%s` found %d vulnerabilit%s: %d critical, %d high, %d medium, %d low, %d unknown.',
-                        $this->notification->scanId,
+                        'Found %d vulnerabilit%s: %d critical, %d high, %d medium, %d low, %d unknown.',
                         $total,
                         $total === 1 ? 'y' : 'ies',
                         $counts['critical'],
@@ -90,5 +66,32 @@ final class VulnerabilitiesFound extends Notification
                     $attachment->action('View in Radar', $this->notification->dashboardUrl);
                 }
             });
+    }
+
+    /** @return array<string, mixed> */
+    private function mailViewData(): array
+    {
+        $total = count($this->notification->vulnerabilities);
+
+        return [
+            'subject' => $this->subject(),
+            'total' => $total,
+            'pluralizedVulnerability' => $total === 1 ? 'vulnerability' : 'vulnerabilities',
+            'counts' => $this->notification->severityCounts(),
+            'vulnerabilities' => array_slice($this->notification->vulnerabilities, 0, 5),
+            'remainingCount' => max(0, $total - 5),
+            'dashboardUrl' => $this->notification->dashboardUrl,
+        ];
+    }
+
+    private function subject(): string
+    {
+        $total = count($this->notification->vulnerabilities);
+
+        return sprintf(
+            '[Radar] %d vulnerabilit%s detected',
+            $total,
+            $total === 1 ? 'y' : 'ies',
+        );
     }
 }

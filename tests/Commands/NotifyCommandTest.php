@@ -45,6 +45,21 @@ it('sends to mail and slack when both routes are configured', function (): void 
         && $notification->channels === ['mail', 'slack']);
 });
 
+it('omits the dashboard url when the dashboard is disabled', function (): void {
+    Config::set('radar.dashboard.enabled', false);
+    Config::set('radar.notifications.routes.mail', ['dev@example.com']);
+
+    vulnerableScan();
+
+    Notification::fake();
+
+    $this->artisan('radar:notify')
+        ->assertSuccessful()
+        ->expectsOutputToContain('Sent vulnerability notification for 2 finding(s) via mail.');
+
+    Notification::assertSentOnDemand(VulnerabilitiesFound::class, fn (VulnerabilitiesFound $notification): bool => $notification->notification->dashboardUrl === null);
+});
+
 it('exits early when no scan exists', function (): void {
     $this->artisan('radar:notify')
         ->assertSuccessful()

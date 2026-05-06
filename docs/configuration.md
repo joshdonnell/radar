@@ -88,6 +88,12 @@ Gate::define('viewRadar', fn ($user = null) => app()->environment('local'));
 'notifications' => [
     'dedupe_ttl' => env('RADAR_NOTIFICATION_DEDUPE_TTL', 86400),
 
+    'schedule' => [
+        'enabled' => env('RADAR_NOTIFICATION_SCHEDULE_ENABLED', true),
+        'time' => env('RADAR_NOTIFICATION_SCHEDULE_TIME', '02:00'),
+        'timezone' => env('RADAR_NOTIFICATION_SCHEDULE_TIMEZONE'),
+    ],
+
     'routes' => [
         'mail' => array_values(array_filter(explode(',', (string) env('RADAR_NOTIFICATION_MAIL_TO', '')))),
         'slack' => env('RADAR_NOTIFICATION_SLACK_WEBHOOK_URL'),
@@ -100,5 +106,8 @@ Radar uses Laravel Notifications. Your application still owns the normal mail an
 - `routes.mail` is a list of mail recipients.
 - `routes.slack` is a Slack webhook URL for Laravel's Slack notification channel.
 - `dedupe_ttl` controls how long identical vulnerability finding sets are suppressed after successful delivery.
+- `schedule.enabled` controls Radar's built-in scheduled `radar:notify --scan` run.
+- `schedule.time` controls the nightly run time, using Laravel scheduler time format.
+- `schedule.timezone` optionally pins the scheduled run to a timezone.
 
-Radar only sends vulnerability notifications when at least one route is configured.
+Radar only sends vulnerability notifications when at least one route is configured. The scheduled run is registered automatically, but your application still needs Laravel's scheduler running in production.

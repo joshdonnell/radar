@@ -61,12 +61,10 @@ final class NotifyCommand extends Command
             return self::SUCCESS;
         }
 
-        $path = config('radar.path', 'radar');
-
         $notification = new VulnerabilityNotificationData(
             scanId: (string) $scan->id,
             vulnerabilities: $vulnerabilities,
-            dashboardUrl: url(is_string($path) ? $path : 'radar'),
+            dashboardUrl: $this->dashboardUrl(),
         );
 
         if (! $this->shouldSendVulnerabilityNotification->execute($notification)) {
@@ -150,6 +148,17 @@ final class NotifyCommand extends Command
             advisoryUrl: $this->stringValue($vulnerability, 'advisory_url'),
             recommendation: $this->stringValue($vulnerability, 'recommendation'),
         );
+    }
+
+    private function dashboardUrl(): ?string
+    {
+        if (config('radar.dashboard.enabled') !== true) {
+            return null;
+        }
+
+        $path = config('radar.path', 'radar');
+
+        return url(is_string($path) ? $path : 'radar');
     }
 
     private function hasNotificationChannel(): bool

@@ -70,7 +70,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          composer require "orchestra/testbench:${{ env.TESTBENCH }}" --no-interaction --no-update
+          composer require --dev "orchestra/testbench:${{ env.TESTBENCH }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
       - name: Build Assets
