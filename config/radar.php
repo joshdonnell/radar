@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use JoshDonnell\Radar\Actions\CreateScanResultAction;
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -29,6 +27,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    |
+    | Radar's dashboard is intended for local/non-production inspection by
+    | default. Production applications can still run scans and notifications;
+    | explicitly opt in if you want to expose the dashboard there.
+    |
+    */
+
+    'dashboard' => [
+        'enabled' => env('RADAR_DASHBOARD_ENABLED', ! app()->isProduction()),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Storage
     |--------------------------------------------------------------------------
     |
@@ -42,20 +55,6 @@ return [
         'database' => [
             'connection' => env('RADAR_DB_CONNECTION', env('DB_CONNECTION', 'sqlite')),
         ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Actions
-    |--------------------------------------------------------------------------
-    |
-    | These actions make Radar's internals replaceable without introducing a
-    | heavier plugin or repository layer.
-    |
-    */
-
-    'actions' => [
-        'store_scan_result' => CreateScanResultAction::class,
     ],
 
     /*
@@ -86,6 +85,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Pruning
+    |--------------------------------------------------------------------------
+    |
+    | Radar will automatically prune scan records older than the configured
+    | number of days. Set to null to disable pruning.
+    |
+    */
+
+    'prune' => [
+        'days' => env('RADAR_PRUNE_DAYS', 30),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Command Timeout
+    |--------------------------------------------------------------------------
+    |
+    | Radar runs read-only Composer and Node package manager commands when
+    | fixture JSON files are not present. This value controls how long each
+    | command may run before Radar stops waiting for output.
+    |
+    */
+
+    'command_timeout' => env('RADAR_COMMAND_TIMEOUT', 60),
+
+    /*
+    |--------------------------------------------------------------------------
     | Notifications
     |--------------------------------------------------------------------------
     |
@@ -94,12 +120,11 @@ return [
     */
 
     'notifications' => [
-        'mail' => [
-            'to' => array_values(array_filter(explode(',', (string) env('RADAR_MAIL_TO', '')))),
-        ],
+        'dedupe_ttl' => env('RADAR_NOTIFICATION_DEDUPE_TTL', 86400),
 
-        'slack' => [
-            'webhook_url' => env('RADAR_SLACK_WEBHOOK_URL'),
+        'routes' => [
+            'mail' => array_values(array_filter(explode(',', (string) env('RADAR_NOTIFICATION_MAIL_TO', '')))),
+            'slack' => env('RADAR_NOTIFICATION_SLACK_WEBHOOK_URL'),
         ],
     ],
 ];

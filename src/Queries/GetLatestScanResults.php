@@ -6,7 +6,6 @@ namespace JoshDonnell\Radar\Queries;
 
 use Illuminate\Database\Eloquent\Builder;
 use JoshDonnell\Radar\Models\RadarScan;
-use JoshDonnell\Radar\Support\Config;
 
 final class GetLatestScanResults
 {
@@ -15,10 +14,7 @@ final class GetLatestScanResults
      */
     public function builder(): Builder
     {
-        $connection = Config::databaseConnection();
-        $query = $connection ? RadarScan::on($connection) : RadarScan::query();
-
-        return $query
+        return RadarScan::query()
             ->latest('created_at');
     }
 }

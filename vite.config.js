@@ -44,13 +44,11 @@ export default defineConfig({
     build: {
         outDir: "resources/dist",
         emptyOutDir: true,
+        manifest: "manifest.json",
         rollupOptions: {
-            input: {
-                radar: resolve(__dirname, "resources/js/app.ts"),
-            },
+            input: resolve(__dirname, "resources/js/app.ts"),
             output: {
-                entryFileNames: "radar.js",
-                assetFileNames: "[name][extname]",
+                codeSplitting: false,
             },
         },
     },

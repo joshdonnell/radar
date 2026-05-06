@@ -8,9 +8,9 @@ use Illuminate\Http\JsonResponse;
 use JoshDonnell\Radar\Http\Resources\RadarScanResource;
 use JoshDonnell\Radar\Queries\GetLatestScanResults;
 
-final class ScanApiController
+final class LatestScanApiController
 {
-    public function latest(GetLatestScanResults $scanResults): JsonResponse
+    public function __invoke(GetLatestScanResults $scanResults): JsonResponse
     {
         $scan = $scanResults->builder()->first();
 
