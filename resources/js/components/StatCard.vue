@@ -1,44 +1,54 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { RadarColor, radarColorClasses } from '../utils/colors'
 
 const props = withDefaults(
   defineProps<{
     label: string
     value?: number | null
     suffix?: string | null
-    color?: 'white' | 'rose' | 'emerald'
+    color?: RadarColor
   }>(),
   {
     value: null,
     suffix: null,
-    color: 'white',
+    color: RadarColor.White,
   },
 )
 
-const colorClass = computed(() => {
-  const map: Record<string, string> = {
-    rose: 'text-rose-300',
-    emerald: 'text-emerald-300',
-    white: 'text-white',
-  }
-  return map[props.color] ?? map.white
-})
+const colorClasses = computed(() => radarColorClasses(props.color))
 
 const displayValue = computed(() => {
-  return props.value !== null ? props.value : 'N/A'
+  return props.value !== null ? props.value : '-'
 })
 </script>
 
 <template>
-  <div class="bg-slate-900/95 p-6">
-    <dt class="text-sm font-medium text-slate-400">{{ label }}</dt>
-    <dd class="mt-3 flex items-baseline gap-2">
-      <span class="text-4xl font-semibold tracking-tight" :class="colorClass">{{
-        displayValue
-      }}</span>
-      <span v-if="suffix && value !== null" class="text-sm text-slate-500">{{
-        suffix
-      }}</span>
+  <div class="group relative p-5 transition-colors hover:bg-white/[0.01]">
+    <dt
+      class="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-slate-500"
+    >
+      <span
+        class="inline-flex h-4 w-4 items-center justify-center rounded text-[9px] font-bold ring-1 ring-inset transition-colors"
+        :class="[colorClasses.bg, colorClasses.text, colorClasses.ring]"
+      >
+        <slot name="icon" />
+      </span>
+      {{ label }}
+    </dt>
+    <dd class="mt-3 flex items-baseline gap-1.5">
+      <span
+        class="text-3xl font-semibold tracking-tight tabular-nums"
+        :class="colorClasses.text"
+      >
+        {{ displayValue }}
+      </span>
+      <span
+        v-if="suffix && value !== null"
+        class="text-xs font-medium text-slate-600"
+      >
+        {{ suffix }}
+      </span>
     </dd>
   </div>
 </template>
