@@ -1,0 +1,14 @@
+{
+    "name": "joshdonnell/radar-fixture-app",
+    "description": "Fixture app for Radar Composer inventory tests",
+    "type": "project",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^12.0",
+        "spatie/laravel-package-tools": "^1.93"
+    },
+    "require-dev": {
+        "pestphp/pest": "^4.7",
+        "orchestra/testbench": "^10.0"
+    }
+}

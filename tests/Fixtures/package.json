@@ -1,0 +1,14 @@
+{
+  "name": "radar-npm-fixture",
+  "private": true,
+  "dependencies": {
+    "vite": "^7.0.0",
+    "@vueuse/core": "^14.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  }
+}

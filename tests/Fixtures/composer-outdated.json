@@ -1,0 +1,22 @@
+{
+    "installed": [
+        {
+            "name": "laravel/framework",
+            "version": "12.57.0",
+            "latest": "12.57.1",
+            "latest-status": "semver-safe-update"
+        },
+        {
+            "name": "pestphp/pest",
+            "version": "4.7.0",
+            "latest": "5.0.0",
+            "latest-status": "update-possible"
+        },
+        {
+            "name": "symfony/console",
+            "version": "7.3.0",
+            "latest": "7.3.1",
+            "latest-status": "semver-safe-update"
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "vite": {
+        "current": "7.0.1",
+        "wanted": "7.0.2",
+        "latest": "8.0.0",
+        "dependent": "radar-npm-fixture"
+    },
+    "typescript": {
+        "current": "6.0.3",
+        "wanted": "6.0.4",
+        "latest": "6.0.4",
+        "dependent": "radar-npm-fixture"
+    },
+    "rollup": {
+        "current": "4.53.3",
+        "wanted": "4.53.4",
+        "latest": "4.53.4",
+        "dependent": "vite"
+    }
+}

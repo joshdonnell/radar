@@ -1,0 +1,119 @@
+{
+    "_readme": [
+        "This file is a hand-written fixture for Radar tests.",
+        "It intentionally contains direct and transitive packages."
+    ],
+    "content-hash": "fixture-content-hash",
+    "packages": [
+        {
+            "name": "laravel/framework",
+            "version": "v12.57.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/framework.git",
+                "reference": "fixture-laravel-framework-ref"
+            },
+            "require": {
+                "php": "^8.3",
+                "symfony/console": "^7.0"
+            },
+            "type": "library"
+        },
+        {
+            "name": "spatie/laravel-package-tools",
+            "version": "1.93.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/laravel-package-tools.git",
+                "reference": "fixture-package-tools-ref"
+            },
+            "require": {
+                "illuminate/contracts": "^12.0|^13.0",
+                "php": "^8.2"
+            },
+            "type": "library",
+            "abandoned": "spatie/package-tools"
+        },
+        {
+            "name": "symfony/console",
+            "version": "v7.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/console.git",
+                "reference": "fixture-symfony-console-ref"
+            },
+            "require": {
+                "php": ">=8.2"
+            },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [
+        {
+            "name": "pestphp/pest",
+            "version": "v4.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pestphp/pest.git",
+                "reference": "fixture-pest-ref"
+            },
+            "require": {
+                "php": "^8.3"
+            },
+            "type": "library"
+        },
+        {
+            "name": "orchestra/testbench",
+            "version": "v10.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/orchestral/testbench.git",
+                "reference": "fixture-testbench-ref"
+            },
+            "require": {
+                "php": "^8.3",
+                "phpunit/phpunit": "^11.5",
+                "symfony/console": "^7.0"
+            },
+            "type": "library"
+        },
+        {
+            "name": "phpunit/phpunit",
+            "version": "11.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sebastianbergmann/phpunit.git",
+                "reference": "fixture-phpunit-ref"
+            },
+            "require": {
+                "php": ">=8.2"
+            },
+            "type": "library",
+            "abandoned": true
+        },
+        {
+            "name": "symfony/console",
+            "version": "v7.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/console.git",
+                "reference": "fixture-symfony-console-ref"
+            },
+            "require": {
+                "php": ">=8.2"
+            },
+            "type": "library"
+        }
+    ],
+    "packages-dev-alias": [],
+    "packages-alias": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": true,
+    "prefer-lowest": false,
+    "platform": {
+        "php": "^8.3"
+    },
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
+}

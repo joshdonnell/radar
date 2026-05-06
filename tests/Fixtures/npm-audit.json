@@ -1,0 +1,43 @@
+{
+    "auditReportVersion": 2,
+    "vulnerabilities": {
+        "vite": {
+            "name": "vite",
+            "severity": "high",
+            "isDirect": true,
+            "via": [
+                {
+                    "source": 1001,
+                    "name": "vite",
+                    "dependency": "vite",
+                    "title": "Fixture Vite advisory",
+                    "url": "https://github.com/advisories/GHSA-vite-fixture",
+                    "severity": "high",
+                    "range": "<7.0.2"
+                }
+            ],
+            "range": "<7.0.2",
+            "nodes": ["node_modules/vite"],
+            "fixAvailable": true
+        },
+        "rollup": {
+            "name": "rollup",
+            "severity": "moderate",
+            "isDirect": false,
+            "via": [
+                {
+                    "source": 1002,
+                    "name": "rollup",
+                    "dependency": "rollup",
+                    "title": "Fixture Rollup advisory",
+                    "url": "https://github.com/advisories/GHSA-rollup-fixture",
+                    "severity": "moderate",
+                    "range": "<4.53.4"
+                }
+            ],
+            "range": "<4.53.4",
+            "nodes": ["node_modules/rollup"],
+            "fixAvailable": true
+        }
+    }
+}
