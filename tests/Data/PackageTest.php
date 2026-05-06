@@ -15,6 +15,7 @@ it('can be created from package data', function (): void {
         dependencyType: DependencyType::Production,
         isDirect: true,
         sourceUrl: 'https://github.com/laravel/framework',
+        requiredBy: ['joshdonnell/radar'],
     );
 
     expect($dto->toArray())->toBe([
@@ -25,6 +26,7 @@ it('can be created from package data', function (): void {
         'dependency_type' => 'production',
         'is_direct' => true,
         'source_url' => 'https://github.com/laravel/framework',
+        'required_by' => ['joshdonnell/radar'],
     ]);
 });
 
@@ -45,6 +47,7 @@ it('default is_direct to false', function (): void {
         'dependency_type' => 'production',
         'is_direct' => false,
         'source_url' => null,
+        'required_by' => [],
     ]);
 });
 
@@ -65,5 +68,6 @@ it('allows source_url to be null', function (): void {
         'dependency_type' => 'production',
         'is_direct' => false,
         'source_url' => null,
+        'required_by' => [],
     ]);
 });

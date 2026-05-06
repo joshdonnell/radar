@@ -22,6 +22,21 @@ final readonly class OutdatedPackageFinding
         public ?string $suggestedCommand = null,
     ) {}
 
+    public function withSuggestedCommand(?string $suggestedCommand): self
+    {
+        return new self(
+            id: $this->id,
+            ecosystem: $this->ecosystem,
+            packageName: $this->packageName,
+            currentVersion: $this->currentVersion,
+            latestVersion: $this->latestVersion,
+            updateType: $this->updateType,
+            dependencyType: $this->dependencyType,
+            isDirect: $this->isDirect,
+            suggestedCommand: $suggestedCommand,
+        );
+    }
+
     /** @return array<string, mixed> */
     public function toArray(): array
     {
