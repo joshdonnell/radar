@@ -9,19 +9,29 @@
 
 ## Introduction
 
-**Laravel Radar** is a lightweight dependency health dashboard for Laravel applications.
+**Laravel Radar** is a lightweight dependency health dashboard and notifier for Laravel applications.
 
-It helps you answer one question:
+Radar scans Composer and NPM dependencies, stores a snapshot, and highlights:
 
-> Do I have vulnerable Composer or NPM packages, and what should I do next?
+- vulnerable packages
+- outdated direct dependencies
+- abandoned Composer packages
+- practical, conservative next steps
 
-Radar is inspired by Laravel Telescope: install it, run a scan, open an internal dashboard, and get a clear dependency health snapshot without leaving your app.
+Radar is intentionally read-only. It reports dependency health and suggests commands, but it does **not** update dependencies, edit lock files, commit changes, or deploy code for you.
 
-Radar is intentionally read-only. It reports vulnerable, outdated, and abandoned packages, then suggests conservative next steps. It does **not** update dependencies, edit lock files, commit changes, or deploy code for you.
+<p align="center">
+    <img src="art/dashboard.png" alt="Laravel Radar dashboard screenshot">
+</p>
+
+## Requirements
+
+- PHP 8.3+
+- Laravel 12 or 13
+- Composer
+- Node/NPM available when scanning JavaScript dependencies
 
 ## Installation
-
-> **Requires [PHP 8.3+](https://php.net/releases/)** and **Laravel 12+**.
 
 Install Radar with Composer:
 
@@ -43,88 +53,61 @@ php artisan migrate
 
 ## Usage
 
-Run your first dependency scan:
+Run a dependency scan:
 
 ```bash
 php artisan radar:scan
 ```
 
-Open the dashboard:
+Open the dashboard at:
 
 ```txt
 /radar
 ```
 
-Before the first scan, the dashboard shows a first-run screen with a **Run first scan** button. After a scan has been recorded, Radar shows the latest dependency health snapshot.
-
-> **Production dashboard default:** Radar's dashboard is disabled in production by default. Production applications can still run scans and send notifications. Set `RADAR_DASHBOARD_ENABLED=true` only when the dashboard is protected by trusted authentication and authorization.
-
-## Dashboard
-
-Radar's dashboard shows:
-
-- health score
-- latest scan time
-- Composer and NPM package inventory
-- vulnerable packages with advisory details
-- direct vs transitive dependency status
-- affected and patched versions where available
-- safe suggested commands or next steps
-- outdated direct dependencies
-- abandoned Composer packages
-
-The dashboard path defaults to `/radar` and can be changed with:
+The dashboard path can be changed with:
 
 ```env
 RADAR_PATH=internal/radar
 ```
 
+Radar's dashboard is enabled outside production by default and disabled in production by default. Production applications can still run scans and send notifications. Only enable the dashboard in production when it is protected by trusted authentication and authorization.
+
+```env
+RADAR_DASHBOARD_ENABLED=true
+```
+
 ## Commands
 
-### Scan dependencies
+Radar currently ships these Artisan commands:
+
+```bash
+php artisan radar:scan
+php artisan radar:notify
+php artisan radar:clear
+```
+
+### `radar:scan`
+
+Scans application dependencies and stores a Radar snapshot.
 
 ```bash
 php artisan radar:scan
 ```
 
-Scan another project path:
+Scan a different project path:
 
 ```bash
 php artisan radar:scan --path=/path/to/app
 ```
 
-### List vulnerabilities
+### `radar:notify`
 
-```bash
-php artisan radar:vulnerabilities
-```
-
-Lists Composer and NPM vulnerability findings detected for the project.
-
-### List outdated dependencies
-
-```bash
-php artisan radar:outdated
-```
-
-Lists outdated direct Composer and NPM dependencies.
-
-### Recalculate scores
-
-```bash
-php artisan radar:score
-php artisan radar:score --all
-```
-
-Recalculates stored scan health scores.
-
-### Send notifications
+Sends deduplicated vulnerability notifications for the latest stored scan.
 
 ```bash
 php artisan radar:notify
 ```
-
-Sends deduplicated vulnerability notifications for the latest stored scan using Laravel Notifications.
 
 Run a fresh scan before notifying:
 
@@ -132,52 +115,37 @@ Run a fresh scan before notifying:
 php artisan radar:notify --scan
 ```
 
-### Clear scan history
+Notifications are only sent when vulnerabilities exist and at least one notification route is configured.
+
+### `radar:clear`
+
+Clears stored Radar scan history.
 
 ```bash
 php artisan radar:clear
+```
+
+Skip the confirmation prompt:
+
+```bash
 php artisan radar:clear --force
 ```
 
-Clears stored scan snapshots.
+## Dashboard
 
-## Composer and NPM support
+The dashboard shows the latest stored scan, including:
 
-Radar reads dependency information from package manager files and installed package metadata.
-
-Composer support includes:
-
-- package inventory from `composer.lock`
-- fallback inventory from `vendor/composer/installed.json`
-- vulnerability findings from `composer audit --format=json`
-- outdated direct dependencies from Composer's outdated output
-- abandoned package metadata from Composer package data
-
-NPM ecosystem support includes:
-
-- package inventory from `package-lock.json`
-- fallback direct package inventory from `node_modules/*/package.json`
-- vulnerability findings from `npm audit --json`
-- outdated direct dependencies from NPM's outdated output
-
-## Supported Node runners
-
-Radar detects the JavaScript package manager from the project lock file and uses that runner when suggesting safe NPM ecosystem update commands.
-
-| Lock file | Runner | Example recommendation |
-| --- | --- | --- |
-| `package-lock.json` | npm | `npm update vite` |
-| `npm-shrinkwrap.json` | npm | `npm update vite` |
-| `yarn.lock` | Yarn | `yarn up vite` |
-| `pnpm-lock.yaml` | pnpm | `pnpm update vite` |
-| `bun.lock` | Bun | `bun update vite` |
-| `bun.lockb` | Bun | `bun update vite` |
-
-If no known lock file exists, Radar falls back to npm.
+- health score
+- latest scan time
+- Composer and NPM package inventory
+- vulnerability findings
+- outdated direct dependency findings
+- abandoned Composer package findings
+- suggested safe commands or review steps where Radar can infer them
 
 ## Notifications
 
-Radar uses Laravel Notifications for vulnerability alerts. Your application still owns normal Laravel mail configuration; Radar only needs to know which on-demand notification routes to target.
+Radar uses Laravel Notifications. Your application still owns the normal mail and Slack transport configuration; Radar only stores the on-demand notification routes it should target.
 
 Configure mail recipients:
 
@@ -191,19 +159,31 @@ Configure Slack:
 RADAR_NOTIFICATION_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 ```
 
-Then run:
+Send notifications manually:
 
 ```bash
 php artisan radar:notify
 ```
 
-Radar only sends notifications when vulnerabilities exist and at least one notification route is configured. Repeated notifications for the same finding set are deduplicated for the configured TTL.
+Or scan first, then notify:
+
+```bash
+php artisan radar:notify --scan
+```
+
+Repeated notifications for the same vulnerability finding set are deduplicated for the configured TTL:
+
+```env
+RADAR_NOTIFICATION_DEDUPE_TTL=86400
+```
 
 ## Scheduling
 
-Radar preconfigures a nightly scheduled `radar:notify --scan` run at `02:00`, so each notification run starts with a fresh scan. In production, make sure your application has Laravel's scheduler running.
+Radar preconfigures a nightly scheduled `radar:notify --scan` run at `02:00`, so each notification run starts with a fresh scan.
 
-You may customize or disable the built-in schedule:
+Your application still needs Laravel's scheduler running in production, usually via a cron entry that runs `php artisan schedule:run` every minute.
+
+Customize or disable Radar's built-in schedule:
 
 ```env
 RADAR_NOTIFICATION_SCHEDULE_ENABLED=true
@@ -211,11 +191,11 @@ RADAR_NOTIFICATION_SCHEDULE_TIME=02:00
 RADAR_NOTIFICATION_SCHEDULE_TIMEZONE=Europe/London
 ```
 
-The dashboard remains disabled in production unless you explicitly enable it.
-
 ## Authorization
 
-Radar checks the configured gate outside local environments:
+Radar checks the configured gate outside local environments before serving the dashboard.
+
+Define the gate in your application, for example:
 
 ```php
 use Illuminate\Support\Facades\Gate;
@@ -223,7 +203,7 @@ use Illuminate\Support\Facades\Gate;
 Gate::define('viewRadar', fn ($user = null): bool => $user?->is_admin === true);
 ```
 
-You may change the gate name in `config/radar.php`.
+If you publish the config, you can change the gate name by editing the `authorization.gate` value in `config/radar.php`.
 
 ## Configuration
 
@@ -241,6 +221,7 @@ RADAR_PATH=radar
 RADAR_DASHBOARD_ENABLED=false
 RADAR_DB_CONNECTION=sqlite
 RADAR_PRUNE_DAYS=30
+RADAR_COMMAND_TIMEOUT=60
 RADAR_NOTIFICATION_MAIL_TO=security@example.com
 RADAR_NOTIFICATION_SLACK_WEBHOOK_URL=
 RADAR_NOTIFICATION_DEDUPE_TTL=86400
@@ -251,15 +232,49 @@ RADAR_NOTIFICATION_SCHEDULE_TIMEZONE=
 
 See [the configuration documentation](docs/configuration.md) for the full config reference.
 
+## Dependency sources
+
+Radar reads dependency information from package manager files and installed package metadata.
+
+Composer support includes:
+
+- package inventory from `composer.lock`
+- fallback inventory from `vendor/composer/installed.json`
+- vulnerability findings from `composer audit --format=json`
+- outdated direct dependencies from Composer's outdated output
+- abandoned package metadata from Composer package data
+
+NPM support includes:
+
+- package inventory from `package-lock.json`
+- fallback direct package inventory from `node_modules/*/package.json`
+- vulnerability findings from `npm audit --json`
+- outdated direct dependencies from NPM's outdated output
+
+## Supported Node runners
+
+Radar detects the JavaScript package manager from the project lock file and uses that runner when suggesting safe NPM update commands.
+
+| Lock file | Runner | Example recommendation |
+| --- | --- | --- |
+| `package-lock.json` | npm | `npm update vite` |
+| `npm-shrinkwrap.json` | npm | `npm update vite` |
+| `yarn.lock` | Yarn | `yarn up vite` |
+| `pnpm-lock.yaml` | pnpm | `pnpm update vite` |
+| `bun.lock` | Bun | `bun update vite` |
+| `bun.lockb` | Bun | `bun update vite` |
+
+If no known lock file exists, Radar falls back to npm.
+
 ## Testing
 
-Run the PHP test suite:
+Run the PHP checks:
 
 ```bash
 composer test
 ```
 
-Run frontend checks:
+Run frontend checks while working on dashboard assets:
 
 ```bash
 npm run test:lint
