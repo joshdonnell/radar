@@ -1,0 +1,24 @@
+{
+    "advisories": {
+        "laravel/framework": [
+            {
+                "advisoryId": "PKSA-laravel-framework-fixture",
+                "cve": "CVE-2026-1001",
+                "title": "Fixture Laravel advisory",
+                "link": "https://github.com/advisories/GHSA-laravel-fixture",
+                "affectedVersions": "<12.57.1",
+                "severity": "high"
+            }
+        ],
+        "symfony/console": [
+            {
+                "advisoryId": "PKSA-symfony-console-fixture",
+                "cve": null,
+                "title": "Fixture Symfony advisory",
+                "link": "https://github.com/advisories/GHSA-symfony-fixture",
+                "affectedVersions": "<7.3.1",
+                "severity": "medium"
+            }
+        ]
+    }
+}
