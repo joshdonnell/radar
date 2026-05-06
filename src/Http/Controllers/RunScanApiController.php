@@ -6,7 +6,7 @@ namespace JoshDonnell\Radar\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use JoshDonnell\Radar\Actions\RunScanAction;
-use JoshDonnell\Radar\Data\RadarScan;
+use JoshDonnell\Radar\Data\RadarScanData;
 
 final readonly class RunScanApiController
 {
@@ -21,14 +21,7 @@ final readonly class RunScanApiController
         );
 
         return response()->json([
-            'scan' => (new RadarScan(
-                id: $scan->id,
-                score: $scan->score,
-                package_count: $scan->package_count,
-                vulnerability_count: $scan->vulnerability_count,
-                payload: $scan->payload,
-                created_at: $scan->created_at,
-            ))->toArray(),
+            'scan' => RadarScanData::fromModel($scan)->toArray(),
         ]);
     }
 }

@@ -7,17 +7,21 @@ namespace JoshDonnell\Radar\Data;
 use JoshDonnell\Radar\Enums\DependencyType;
 use JoshDonnell\Radar\Enums\Ecosystem;
 
-final readonly class AbandonedPackageFinding
+final readonly class PackageData
 {
+    /**
+     * @param  list<string>  $requiredBy
+     */
     public function __construct(
         public string $id,
         public Ecosystem $ecosystem,
-        public string $packageName,
+        public string $name,
         public string $installedVersion,
         public DependencyType $dependencyType,
-        public bool $isDirect,
-        public ?string $replacementPackage = null,
-        public ?string $recommendation = null,
+        public ?bool $isDirect = false,
+        public ?string $sourceUrl = null,
+        public array $requiredBy = [],
+        public ?string $path = null,
     ) {}
 
     /** @return array<string, mixed> */
@@ -26,12 +30,12 @@ final readonly class AbandonedPackageFinding
         return [
             'id' => $this->id,
             'ecosystem' => $this->ecosystem->value,
-            'package_name' => $this->packageName,
+            'name' => $this->name,
             'installed_version' => $this->installedVersion,
             'dependency_type' => $this->dependencyType->value,
             'is_direct' => $this->isDirect,
-            'replacement_package' => $this->replacementPackage,
-            'recommendation' => $this->recommendation,
+            'source_url' => $this->sourceUrl,
+            'required_by' => $this->requiredBy,
         ];
     }
 }

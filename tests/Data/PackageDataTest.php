@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use JoshDonnell\Radar\Data\Package;
+use JoshDonnell\Radar\Data\PackageData;
 use JoshDonnell\Radar\Enums\DependencyType;
 use JoshDonnell\Radar\Enums\Ecosystem;
 
 it('can be created from package data', function (): void {
-    $dto = new Package(
+    $dto = new PackageData(
         id: '9efafd7f-f9cf-42c0-aa90-c8ed8e387f13',
         ecosystem: Ecosystem::Composer,
         name: 'laravel/framework',
@@ -31,7 +31,7 @@ it('can be created from package data', function (): void {
 });
 
 it('default is_direct to false', function (): void {
-    $dto = new Package(
+    $dto = new PackageData(
         id: '9efafd7f-f9cf-42c0-aa90-c8ed8e387f13',
         ecosystem: Ecosystem::Composer,
         name: 'laravel/framework',
@@ -52,7 +52,7 @@ it('default is_direct to false', function (): void {
 });
 
 it('allows source_url to be null', function (): void {
-    $dto = new Package(
+    $dto = new PackageData(
         id: '9efafd7f-f9cf-42c0-aa90-c8ed8e387f13',
         ecosystem: Ecosystem::Composer,
         name: 'laravel/framework',

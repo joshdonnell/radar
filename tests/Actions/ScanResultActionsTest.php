@@ -40,3 +40,20 @@ it('stores scan results when no dedicated database connection is configured', fu
 
     expect(RadarScan::query()->where('score', 92)->count())->toBe(1);
 });
+
+it('prunes scan results using numeric string prune days', function (): void {
+    config(['radar.prune.days' => '7']);
+
+    $staleScan = RadarScan::factory()->create([
+        'created_at' => now()->subDays(8),
+    ]);
+
+    $freshScan = RadarScan::factory()->create([
+        'created_at' => now()->subDays(6),
+    ]);
+
+    (new RadarScan())->pruneAll();
+
+    expect(RadarScan::query()->whereKey($staleScan->id)->exists())->toBeFalse()
+        ->and(RadarScan::query()->whereKey($freshScan->id)->exists())->toBeTrue();
+});

@@ -8,7 +8,7 @@ use JoshDonnell\Radar\Enums\DependencyType;
 use JoshDonnell\Radar\Enums\Ecosystem;
 use JoshDonnell\Radar\Enums\UpdateType;
 
-final readonly class OutdatedPackageFinding
+final readonly class OutdatedPackageFindingData
 {
     public function __construct(
         public string $id,

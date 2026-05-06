@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace JoshDonnell\Radar\Data;
 
 use Carbon\CarbonImmutable;
+use JoshDonnell\Radar\Models\RadarScan;
 
-final readonly class RadarScan
+final readonly class RadarScanData
 {
     /**
      * @param  array<string, mixed>|null  $payload
@@ -20,12 +21,30 @@ final readonly class RadarScan
         public ?CarbonImmutable $created_at,
     ) {}
 
+    public static function fromModel(RadarScan $model): self
+    {
+        return new self(
+            id: $model->id,
+            score: $model->score,
+            package_count: $model->package_count,
+            vulnerability_count: $model->vulnerability_count,
+            payload: $model->payload,
+            created_at: $model->created_at,
+        );
+    }
+
     /** @return array<string, mixed> */
     public function toArray(): array
     {
+        return $this->serializedPayload();
+    }
+
+    /** @return array<string, mixed> */
+    private function serializedPayload(): array
+    {
         return [
             'id' => $this->id,
-            'score' => $this->score ?? 100,
+            'score' => $this->score,
             'package_count' => $this->package_count,
             'vulnerability_count' => $this->vulnerability_count,
             'packages' => $this->payload['packages'] ?? [],

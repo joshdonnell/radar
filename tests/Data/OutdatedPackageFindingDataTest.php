@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use JoshDonnell\Radar\Data\OutdatedPackageFinding;
+use JoshDonnell\Radar\Data\OutdatedPackageFindingData;
 use JoshDonnell\Radar\Enums\DependencyType;
 use JoshDonnell\Radar\Enums\Ecosystem;
 use JoshDonnell\Radar\Enums\UpdateType;
 
 it('can be created from outdated package data', function (): void {
-    $dto = new OutdatedPackageFinding(
+    $dto = new OutdatedPackageFindingData(
         id: 'composer-laravel/framework-outdated',
         ecosystem: Ecosystem::Composer,
         packageName: 'laravel/framework',
@@ -34,7 +34,7 @@ it('can be created from outdated package data', function (): void {
 });
 
 it('allows suggested command to be missing', function (): void {
-    $dto = new OutdatedPackageFinding(
+    $dto = new OutdatedPackageFindingData(
         id: 'npm-vite-outdated',
         ecosystem: Ecosystem::Npm,
         packageName: 'vite',

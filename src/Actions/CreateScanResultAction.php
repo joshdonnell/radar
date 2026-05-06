@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace JoshDonnell\Radar\Actions;
 
 use JoshDonnell\Radar\Models\RadarScan;
-use JoshDonnell\Radar\Support\Config;
 
-final class CreateScanResultAction
+final readonly class CreateScanResultAction
 {
     /**
      * @param  array<string, mixed>  $payload
@@ -18,10 +17,7 @@ final class CreateScanResultAction
         int $vulnerabilityCount = 0,
         int $packageCount = 0,
     ): RadarScan {
-        $connection = Config::databaseConnection();
-        $query = $connection ? RadarScan::on($connection) : RadarScan::query();
-
-        return $query->create([
+        return RadarScan::query()->create([
             'score' => $score,
             'vulnerability_count' => $vulnerabilityCount,
             'package_count' => $packageCount,

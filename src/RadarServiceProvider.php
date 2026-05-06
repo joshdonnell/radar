@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar;
 
+use JoshDonnell\Radar\Commands\ClearCommand;
+use JoshDonnell\Radar\Commands\NotifyCommand;
+use JoshDonnell\Radar\Commands\ScanCommand;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -15,6 +18,11 @@ final class RadarServiceProvider extends PackageServiceProvider
         $package
             ->name('radar')
             ->hasConfigFile()
+            ->hasCommands([
+                ClearCommand::class,
+                NotifyCommand::class,
+                ScanCommand::class,
+            ])
             ->hasViews()
             ->hasAssets()
             ->hasRoute('web')

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use JoshDonnell\Radar\Data\AbandonedPackageFinding;
+use JoshDonnell\Radar\Data\AbandonedPackageFindingData;
 use JoshDonnell\Radar\Enums\DependencyType;
 use JoshDonnell\Radar\Enums\Ecosystem;
 
 it('can be created from abandoned package data', function (): void {
-    $finding = new AbandonedPackageFinding(
+    $finding = new AbandonedPackageFindingData(
         id: 'composer-acme/old-package',
         ecosystem: Ecosystem::Composer,
         packageName: 'acme/old-package',
@@ -31,7 +31,7 @@ it('can be created from abandoned package data', function (): void {
 });
 
 it('allows replacement details to be missing', function (): void {
-    $finding = new AbandonedPackageFinding(
+    $finding = new AbandonedPackageFindingData(
         id: 'composer-acme/old-package',
         ecosystem: Ecosystem::Composer,
         packageName: 'acme/old-package',

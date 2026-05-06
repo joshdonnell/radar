@@ -6,7 +6,7 @@ namespace JoshDonnell\Radar\Actions;
 
 use JoshDonnell\Radar\Concerns\MergesPackages;
 use JoshDonnell\Radar\Concerns\ReadsJsonFiles;
-use JoshDonnell\Radar\Data\Package;
+use JoshDonnell\Radar\Data\PackageData;
 use JoshDonnell\Radar\Enums\DependencyType;
 use JoshDonnell\Radar\Enums\Ecosystem;
 
@@ -15,7 +15,7 @@ final readonly class ParseComposerPackagesAction
     use MergesPackages;
     use ReadsJsonFiles;
 
-    /** @return list<Package> */
+    /** @return list<PackageData> */
     public function execute(?string $basepath = null): array
     {
         $basepath ??= base_path();
@@ -107,7 +107,7 @@ final readonly class ParseComposerPackagesAction
      * @param  list<array<string, mixed>>  $lockedPackages
      * @param  array<string, DependencyType>  $directDependencies
      * @param  array<string, list<string>>  $requiredBy
-     * @return list<Package>
+     * @return list<PackageData>
      */
     private function packages(
         array $lockedPackages,
@@ -128,7 +128,7 @@ final readonly class ParseComposerPackagesAction
                 continue;
             }
 
-            $packages[] = new Package(
+            $packages[] = new PackageData(
                 id: 'composer-'.$name,
                 ecosystem: Ecosystem::Composer,
                 name: $name,
@@ -147,7 +147,7 @@ final readonly class ParseComposerPackagesAction
      * @param  array<string, mixed>  $installedJson
      * @param  array<string, DependencyType>  $productionDependencies
      * @param  array<string, DependencyType>  $developmentDependencies
-     * @return list<Package>
+     * @return list<PackageData>
      */
     private function packagesFromInstalledJson(
         array $installedJson,
@@ -176,7 +176,7 @@ final readonly class ParseComposerPackagesAction
                 continue;
             }
 
-            $packages[] = new Package(
+            $packages[] = new PackageData(
                 id: 'composer-'.$name,
                 ecosystem: Ecosystem::Composer,
                 name: $name,
@@ -192,8 +192,8 @@ final readonly class ParseComposerPackagesAction
     }
 
     /**
-     * @param  list<Package>  $packages
-     * @return list<Package>
+     * @param  list<PackageData>  $packages
+     * @return list<PackageData>
      */
     private function mergeDuplicates(array $packages): array
     {
