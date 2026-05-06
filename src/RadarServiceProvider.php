@@ -14,6 +14,17 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 final class RadarServiceProvider extends PackageServiceProvider
 {
+    public function bootingPackage(): void
+    {
+        if (config('radar.dashboard.enabled') !== null) {
+            return;
+        }
+
+        $dashboardEnabled = $this->app->bound('env') ? ! $this->app->isProduction() : true;
+
+        config()->set('radar.dashboard.enabled', $dashboardEnabled);
+    }
+
     public function packageBooted(): void
     {
         if (! $this->app->runningInConsole()) {
