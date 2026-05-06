@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",
+    "@vueuse/core": "^14.3.0",
     "tailwindcss": "^4.2.4",
     "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.20"
   },
