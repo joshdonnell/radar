@@ -5,7 +5,7 @@ import type { Scan } from '@/types/scan'
 export type PackageRelationFilter = 'all' | 'direct' | 'transitive'
 export type PackageTypeFilter = 'all' | 'production' | 'development' | 'peer'
 
-export function tousePackageFilter(scan: Ref<Scan | null>) {
+export function usePackageFilter(scan: Ref<Scan | null>) {
   const packageSearch = ref('')
   const packageRelationFilter = ref<PackageRelationFilter>('all')
   const packageTypeFilter = ref<PackageTypeFilter>('all')
