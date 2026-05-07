@@ -101,6 +101,16 @@ Scan a different project path:
 php artisan radar:scan --path=/path/to/app
 ```
 
+Use CI mode in a pipeline after installing dependencies:
+
+```bash
+php artisan radar:scan --ci --severity=high
+```
+
+The `--ci` flag makes `radar:scan` return a failing status when vulnerabilities meet the configured severity threshold. Your CI provider does not need special handling. It only needs to run the command and respect the exit code.
+
+Set `--severity` to `low`, `medium`, `high`, or `critical`. Radar returns `1` when a vulnerability is at or above that threshold, `0` when none are, and `2` when the CI options or scan path are invalid.
+
 ### `radar:notify`
 
 Sends deduplicated vulnerability notifications for the latest stored scan.
