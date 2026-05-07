@@ -8,3 +8,10 @@ phpstan.neon
 tmp/
 /workbench
 testbench.yaml
+
+!tests/Fixtures/**/vendor/
+!tests/Fixtures/**/vendor/composer/
+!tests/Fixtures/**/vendor/composer/installed.json
+!tests/Fixtures/**/node_modules/
+!tests/Fixtures/**/node_modules/**/
+!tests/Fixtures/**/node_modules/**/package.json

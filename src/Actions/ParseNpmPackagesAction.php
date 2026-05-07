@@ -26,11 +26,11 @@ final readonly class ParseNpmPackagesAction
         /** @var array{lockfileVersion?: int, packages?: array<string, array<string, mixed>>, dependencies?: array<string, array<string, mixed>>} $packageLock */
         $packageLock = $this->readJson($basepath.'/package-lock.json');
 
-        $directDependencies = [
-            ...$this->directDependencies($packageJson['dependencies'] ?? [], DependencyType::Production),
-            ...$this->directDependencies($packageJson['devDependencies'] ?? [], DependencyType::Development),
-            ...$this->directDependencies($packageJson['peerDependencies'] ?? [], DependencyType::Peer),
-        ];
+        $directDependencies = $this->mergeDependencyTypeMaps(
+            $this->directDependencies($packageJson['dependencies'] ?? [], DependencyType::Production),
+            $this->directDependencies($packageJson['devDependencies'] ?? [], DependencyType::Development),
+            $this->directDependencies($packageJson['peerDependencies'] ?? [], DependencyType::Peer),
+        );
 
         $lockedPackages = $this->normalizeLockedPackages($packageLock);
 

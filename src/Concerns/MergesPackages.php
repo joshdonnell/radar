@@ -23,6 +23,29 @@ trait MergesPackages
     }
 
     /**
+     * @param  array<string, DependencyType>  ...$dependencyTypeMaps
+     * @return array<string, DependencyType>
+     */
+    private function mergeDependencyTypeMaps(array ...$dependencyTypeMaps): array
+    {
+        $merged = [];
+
+        foreach ($dependencyTypeMaps as $dependencyTypeMap) {
+            foreach ($dependencyTypeMap as $package => $dependencyType) {
+                if (! isset($merged[$package])) {
+                    $merged[$package] = $dependencyType;
+
+                    continue;
+                }
+
+                $merged[$package] = $this->mergeDependencyType($merged[$package], $dependencyType);
+            }
+        }
+
+        return $merged;
+    }
+
+    /**
      * @param  array<string, PackageData>  $packages
      * @return array<string, PackageData>
      */

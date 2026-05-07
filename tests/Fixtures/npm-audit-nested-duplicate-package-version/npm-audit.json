@@ -1,0 +1,23 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "vite": {
+      "name": "vite",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 2001,
+          "name": "vite",
+          "dependency": "vite",
+          "severity": "high",
+          "range": "<6.0.1"
+        }
+      ],
+      "range": "<6.0.1",
+      "nodes": [
+        "node_modules/other-tool/node_modules/vite"
+      ]
+    }
+  }
+}

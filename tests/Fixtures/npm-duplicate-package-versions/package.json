@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "vite": "^7.0.0",
+    "other-tool": "^1.0.0"
+  }
+}

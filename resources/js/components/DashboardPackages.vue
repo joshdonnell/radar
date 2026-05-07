@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import type {
+  PackageRelationFilter,
+  PackageTypeFilter,
+} from '@/composables/usePackageFilter'
 import type { PackageRecord } from '@/types/scan'
 import RadarBadge from './RadarBadge.vue'
 
 defineProps<{
   packageSearch: string
+  packageRelationFilter: PackageRelationFilter
+  packageTypeFilter: PackageTypeFilter
   filteredPackages: PackageRecord[]
   visiblePackages: PackageRecord[]
   hasMorePackages: boolean
@@ -14,7 +20,22 @@ defineEmits<{
   clearSearch: []
   togglePackages: []
   'update:packageSearch': [value: string]
+  'update:packageRelationFilter': [value: PackageRelationFilter]
+  'update:packageTypeFilter': [value: PackageTypeFilter]
 }>()
+
+const relationFilters: { label: string; value: PackageRelationFilter }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Direct', value: 'direct' },
+  { label: 'Transitive', value: 'transitive' },
+]
+
+const typeFilters: { label: string; value: PackageTypeFilter }[] = [
+  { label: 'All types', value: 'all' },
+  { label: 'Production', value: 'production' },
+  { label: 'Development', value: 'development' },
+  { label: 'Peer', value: 'peer' },
+]
 </script>
 
 <template>
@@ -95,6 +116,48 @@ defineEmits<{
         <radar-badge color="cyan" size="sm">
           {{ filteredPackages.length }} packages
         </radar-badge>
+      </div>
+    </div>
+
+    <div
+      class="flex flex-col gap-2 border-b border-white/[0.04] px-5 py-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div
+        class="inline-flex w-full flex-wrap gap-1 rounded-lg bg-white/[0.025] p-1 ring-1 ring-inset ring-white/[0.05] sm:w-auto"
+      >
+        <button
+          v-for="filter in relationFilters"
+          :key="filter.value"
+          class="h-7 cursor-pointer rounded-md px-2.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40"
+          :class="
+            packageRelationFilter === filter.value
+              ? 'bg-cyan-400/10 text-cyan-200 ring-1 ring-inset ring-cyan-400/15'
+              : 'text-slate-500 hover:bg-white/[0.04] hover:text-slate-300'
+          "
+          :aria-pressed="packageRelationFilter === filter.value"
+          @click="$emit('update:packageRelationFilter', filter.value)"
+        >
+          {{ filter.label }}
+        </button>
+      </div>
+
+      <div
+        class="inline-flex w-full flex-wrap gap-1 rounded-lg bg-white/[0.025] p-1 ring-1 ring-inset ring-white/[0.05] sm:w-auto"
+      >
+        <button
+          v-for="filter in typeFilters"
+          :key="filter.value"
+          class="h-7 cursor-pointer rounded-md px-2.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40"
+          :class="
+            packageTypeFilter === filter.value
+              ? 'bg-cyan-400/10 text-cyan-200 ring-1 ring-inset ring-cyan-400/15'
+              : 'text-slate-500 hover:bg-white/[0.04] hover:text-slate-300'
+          "
+          :aria-pressed="packageTypeFilter === filter.value"
+          @click="$emit('update:packageTypeFilter', filter.value)"
+        >
+          {{ filter.label }}
+        </button>
       </div>
     </div>
 
@@ -192,6 +255,12 @@ defineEmits<{
       <p class="mt-3 text-xs text-slate-500">
         <span v-if="packageSearch"
           >No packages match "{{ packageSearch }}".</span
+        >
+        <span
+          v-else-if="
+            packageRelationFilter !== 'all' || packageTypeFilter !== 'all'
+          "
+          >No packages match the selected filters.</span
         >
         <span v-else>No packages recorded in this scan.</span>
       </p>

@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "shared-package": "^1.0.0"
+  },
+  "devDependencies": {
+    "shared-package": "^1.0.0",
+    "peer-tool": "^2.0.0",
+    "typescript": "^6.0.0"
+  },
+  "peerDependencies": {
+    "shared-package": "^1.0.0",
+    "peer-tool": "^2.0.0"
+  }
+}

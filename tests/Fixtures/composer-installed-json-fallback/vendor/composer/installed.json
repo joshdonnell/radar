@@ -1,0 +1,30 @@
+{
+    "packages": [
+        {
+            "name": "laravel/framework",
+            "version": "v12.57.0",
+            "require": {
+                "symfony/console": "^7.0"
+            }
+        },
+        {
+            "name": "symfony/console",
+            "version": "v7.3.0"
+        },
+        {
+            "name": "pestphp/pest",
+            "version": "v4.7.0",
+            "require": {
+                "phpunit/phpunit": "^11.5"
+            }
+        },
+        {
+            "name": "phpunit/phpunit",
+            "version": "11.5.0"
+        }
+    ],
+    "dev-package-names": [
+        "pestphp/pest",
+        "phpunit/phpunit"
+    ]
+}
