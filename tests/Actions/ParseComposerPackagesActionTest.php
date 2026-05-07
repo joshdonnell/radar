@@ -110,55 +110,49 @@ it('merges duplicate composer packages from the lock file', function (): void {
         ]);
 });
 
+it('uses production precedence when composer direct requirements overlap', function (): void {
+    $packages = app(ParseComposerPackagesAction::class)->execute(
+        basepath: __DIR__.'/../Fixtures/composer-overlapping-direct-requirements',
+    );
+
+    expect($packages)->toHaveCount(1)
+        ->and($packages[0]->toArray())->toMatchArray([
+            'name' => 'laravel/framework',
+            'dependency_type' => 'production',
+            'is_direct' => true,
+        ]);
+});
+
 it('falls back to composer installed json when composer lock is missing', function (): void {
-    $basepath = sys_get_temp_dir().'/radar-composer-installed-'.bin2hex(random_bytes(4));
+    $packages = app(ParseComposerPackagesAction::class)->execute(
+        basepath: __DIR__.'/../Fixtures/composer-installed-json-fallback',
+    );
 
-    mkdir($basepath.'/vendor/composer', recursive: true);
-
-    file_put_contents($basepath.'/composer.json', json_encode([
-        'require' => [
-            'laravel/framework' => '^12.0',
-        ],
-    ], JSON_PRETTY_PRINT));
-
-    file_put_contents($basepath.'/vendor/composer/installed.json', json_encode([
-        'packages' => [
-            [
-                'name' => 'laravel/framework',
-                'version' => 'v12.57.0',
-                'require' => [
-                    'symfony/console' => '^7.0',
-                ],
-            ],
-            [
-                'name' => 'symfony/console',
-                'version' => 'v7.3.0',
-            ],
-        ],
-    ], JSON_PRETTY_PRINT));
-
-    try {
-        $packages = app(ParseComposerPackagesAction::class)->execute($basepath);
-
-        expect($packages)->toHaveCount(2)
-            ->and($packages[0]->toArray())->toMatchArray([
-                'name' => 'laravel/framework',
-                'installed_version' => '12.57.0',
-                'is_direct' => true,
-            ])
-            ->and($packages[1]->toArray())->toMatchArray([
-                'name' => 'symfony/console',
-                'installed_version' => '7.3.0',
-                'is_direct' => false,
-                'required_by' => ['laravel/framework'],
-            ]);
-    } finally {
-        unlink($basepath.'/vendor/composer/installed.json');
-        rmdir($basepath.'/vendor/composer');
-        rmdir($basepath.'/vendor');
-        unlink($basepath.'/composer.json');
-        rmdir($basepath);
-    }
+    expect($packages)->toHaveCount(4)
+        ->and($packages[0]->toArray())->toMatchArray([
+            'name' => 'laravel/framework',
+            'installed_version' => '12.57.0',
+            'dependency_type' => 'production',
+            'is_direct' => true,
+        ])
+        ->and($packages[1]->toArray())->toMatchArray([
+            'name' => 'symfony/console',
+            'installed_version' => '7.3.0',
+            'dependency_type' => 'production',
+            'is_direct' => false,
+            'required_by' => ['laravel/framework'],
+        ])
+        ->and($packages[2]->toArray())->toMatchArray([
+            'name' => 'pestphp/pest',
+            'dependency_type' => 'development',
+            'is_direct' => true,
+        ])
+        ->and($packages[3]->toArray())->toMatchArray([
+            'name' => 'phpunit/phpunit',
+            'dependency_type' => 'development',
+            'is_direct' => false,
+            'required_by' => ['pestphp/pest'],
+        ]);
 });
 
 it('returns an empty list when composer files are missing', function (): void {

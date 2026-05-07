@@ -44,6 +44,8 @@ const { y: windowScrollY } = useWindowScroll({ behavior: 'smooth' })
 const { activeSection } = useSectionObserver(sectionElements)
 const {
   packageSearch,
+  packageRelationFilter,
+  packageTypeFilter,
   showAllPackages,
   clearSearch,
   filteredPackages,
@@ -133,6 +135,8 @@ defineExpose({ scrollToSection })
       <div ref="packagesSection" data-section-id="radar-packages">
         <dashboard-packages
           v-model:package-search="packageSearch"
+          v-model:package-relation-filter="packageRelationFilter"
+          v-model:package-type-filter="packageTypeFilter"
           :filtered-packages="filteredPackages"
           :visible-packages="visiblePackages"
           :has-more-packages="hasMorePackages"

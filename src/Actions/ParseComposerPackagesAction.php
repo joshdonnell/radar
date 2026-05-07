@@ -28,6 +28,7 @@ final readonly class ParseComposerPackagesAction
 
         $productionDependencies = $this->composerDirectDependencies($composerJson['require'] ?? [], DependencyType::Production);
         $developmentDependencies = $this->composerDirectDependencies($composerJson['require-dev'] ?? [], DependencyType::Development);
+        $directDependencies = $this->mergeDependencyTypeMaps($productionDependencies, $developmentDependencies);
         $lockedPackages = [
             ...($composerLock['packages'] ?? []),
             ...($composerLock['packages-dev'] ?? []),
@@ -36,8 +37,7 @@ final readonly class ParseComposerPackagesAction
         if ($lockedPackages === []) {
             return $this->packagesFromInstalledJson(
                 installedJson: $this->readJson($basepath.'/vendor/composer/installed.json'),
-                productionDependencies: $productionDependencies,
-                developmentDependencies: $developmentDependencies,
+                directDependencies: $directDependencies,
             );
         }
 
@@ -46,13 +46,13 @@ final readonly class ParseComposerPackagesAction
         return $this->mergeDuplicates([
             ...$this->packages(
                 lockedPackages: $composerLock['packages'] ?? [],
-                directDependencies: $productionDependencies,
+                directDependencies: $directDependencies,
                 dependencyType: DependencyType::Production,
                 requiredBy: $requiredBy,
             ),
             ...$this->packages(
                 lockedPackages: $composerLock['packages-dev'] ?? [],
-                directDependencies: $developmentDependencies,
+                directDependencies: $directDependencies,
                 dependencyType: DependencyType::Development,
                 requiredBy: $requiredBy,
             ),
@@ -133,7 +133,7 @@ final readonly class ParseComposerPackagesAction
                 ecosystem: Ecosystem::Composer,
                 name: $name,
                 installedVersion: ltrim($version, 'v'),
-                dependencyType: $dependencyType,
+                dependencyType: $directDependencies[$name] ?? $dependencyType,
                 isDirect: isset($directDependencies[$name]),
                 sourceUrl: $this->sourceUrl($lockedPackage),
                 requiredBy: $requiredBy[$name] ?? [],
@@ -145,14 +145,12 @@ final readonly class ParseComposerPackagesAction
 
     /**
      * @param  array<string, mixed>  $installedJson
-     * @param  array<string, DependencyType>  $productionDependencies
-     * @param  array<string, DependencyType>  $developmentDependencies
+     * @param  array<string, DependencyType>  $directDependencies
      * @return list<PackageData>
      */
     private function packagesFromInstalledJson(
         array $installedJson,
-        array $productionDependencies,
-        array $developmentDependencies,
+        array $directDependencies,
     ): array {
         $installedPackages = $installedJson['packages'] ?? [];
 
@@ -162,6 +160,7 @@ final readonly class ParseComposerPackagesAction
 
         /** @var list<array<string, mixed>> $installedPackages */
         $requiredBy = $this->requiredBy($installedPackages);
+        $developmentPackageNames = $this->developmentPackageNames($installedJson);
         $packages = [];
 
         foreach ($installedPackages as $installedPackage) {
@@ -181,14 +180,47 @@ final readonly class ParseComposerPackagesAction
                 ecosystem: Ecosystem::Composer,
                 name: $name,
                 installedVersion: ltrim($version, 'v'),
-                dependencyType: isset($developmentDependencies[$name]) ? DependencyType::Development : DependencyType::Production,
-                isDirect: isset($productionDependencies[$name]) || isset($developmentDependencies[$name]),
+                dependencyType: $directDependencies[$name] ?? $this->installedDependencyType($name, $developmentPackageNames),
+                isDirect: isset($directDependencies[$name]),
                 sourceUrl: $this->sourceUrl($installedPackage),
                 requiredBy: $requiredBy[$name] ?? [],
             );
         }
 
         return $this->mergeDuplicates($packages);
+    }
+
+    /**
+     * @param  array<string, mixed>  $installedJson
+     * @return list<string>
+     */
+    private function developmentPackageNames(array $installedJson): array
+    {
+        $packageNames = $installedJson['dev-package-names'] ?? [];
+
+        if (! is_array($packageNames)) {
+            return [];
+        }
+
+        $developmentPackageNames = [];
+
+        foreach ($packageNames as $packageName) {
+            if (is_string($packageName)) {
+                $developmentPackageNames[] = $packageName;
+            }
+        }
+
+        return $developmentPackageNames;
+    }
+
+    /** @param list<string> $developmentPackageNames */
+    private function installedDependencyType(string $packageName, array $developmentPackageNames): DependencyType
+    {
+        if (in_array($packageName, $developmentPackageNames, true)) {
+            return DependencyType::Development;
+        }
+
+        return DependencyType::Production;
     }
 
     /**
