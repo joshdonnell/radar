@@ -18,15 +18,15 @@ final readonly class DetectNpmVulnerabilitiesAction
     use RunsReadOnlyCommands;
 
     public function __construct(
-        private ParseNpmPackagesAction $parseNpmPackages,
         private BuildSafeRecommendationAction $buildSafeRecommendation,
     ) {}
 
-    /** @return list<VulnerabilityFindingData> */
-    public function execute(?string $basepath = null): array
+    /**
+     * @param  list<PackageData>  $packages
+     * @return list<VulnerabilityFindingData>
+     */
+    public function execute(string $basepath, array $packages): array
     {
-        $basepath ??= base_path();
-
         $auditReport = $this->readJson($basepath.'/npm-audit.json');
         $nodeRunner = NodeRunner::fromProjectPath($basepath);
 
@@ -39,11 +39,11 @@ final readonly class DetectNpmVulnerabilitiesAction
             };
         }
 
-        $packages = $this->npmPackagesByName($this->parseNpmPackages->execute($basepath));
+        $packagesByName = $this->npmPackagesByName($packages);
         $findings = [];
 
         foreach ($this->vulnerabilities($auditReport) as $packageName => $vulnerability) {
-            $package = $this->packageForVulnerability($packages[$packageName] ?? [], $vulnerability);
+            $package = $this->packageForVulnerability($packagesByName[$packageName] ?? [], $vulnerability);
 
             if (! $package instanceof PackageData) {
                 continue;
@@ -143,9 +143,6 @@ final readonly class DetectNpmVulnerabilitiesAction
     }
 
     /**
-     * Yarn audit outputs line-delimited JSON. Each line is a separate JSON
-     * object. We need to collect all auditAdvisory lines and build a report.
-     *
      * @return array<string, mixed>
      */
     private function readYarnAuditJson(string $basepath): array
@@ -217,15 +214,11 @@ final readonly class DetectNpmVulnerabilitiesAction
     }
 
     /**
-     * Supports both npm v7+ (vulnerabilities key) and npm v6/pnpm
-     * (advisories key) formats.
-     *
      * @param  array<string, mixed>  $auditReport
      * @return array<string, array<string, mixed>>
      */
     private function vulnerabilities(array $auditReport): array
     {
-        // npm v7+ format
         $vulnerabilities = $auditReport['vulnerabilities'] ?? [];
 
         if (is_array($vulnerabilities) && $vulnerabilities !== []) {
@@ -233,7 +226,6 @@ final readonly class DetectNpmVulnerabilitiesAction
             return $vulnerabilities;
         }
 
-        // npm v6 / pnpm format
         $advisories = $auditReport['advisories'] ?? [];
 
         if (! is_array($advisories)) {

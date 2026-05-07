@@ -17,26 +17,26 @@ final readonly class DetectComposerVulnerabilitiesAction
     use RunsReadOnlyCommands;
 
     public function __construct(
-        private ParseComposerPackagesAction $parseComposerPackages,
         private BuildSafeRecommendationAction $buildSafeRecommendation,
     ) {}
 
-    /** @return list<VulnerabilityFindingData> */
-    public function execute(?string $basepath = null): array
+    /**
+     * @param  list<PackageData>  $packages
+     * @return list<VulnerabilityFindingData>
+     */
+    public function execute(string $basepath, array $packages): array
     {
-        $basepath ??= base_path();
-
         $auditReport = $this->readJson($basepath.'/composer-audit.json');
 
         if ($auditReport === []) {
             $auditReport = $this->readCommandJson(['composer', 'audit', '--format=json'], $basepath);
         }
 
-        $packages = $this->packagesByName($this->parseComposerPackages->execute($basepath));
+        $packagesByName = $this->packagesByName($packages);
         $findings = [];
 
         foreach ($this->advisories($auditReport) as $packageName => $advisories) {
-            $package = $packages[$packageName] ?? null;
+            $package = $packagesByName[$packageName] ?? null;
 
             if (! $package instanceof PackageData) {
                 continue;

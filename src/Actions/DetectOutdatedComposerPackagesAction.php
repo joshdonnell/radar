@@ -8,7 +8,7 @@ use JoshDonnell\Radar\Concerns\ClassifiesUpdateTypes;
 use JoshDonnell\Radar\Concerns\ReadsJsonFiles;
 use JoshDonnell\Radar\Concerns\RunsReadOnlyCommands;
 use JoshDonnell\Radar\Data\OutdatedPackageFindingData;
-use JoshDonnell\Radar\Enums\DependencyType;
+use JoshDonnell\Radar\Data\PackageData;
 use JoshDonnell\Radar\Enums\Ecosystem;
 
 final readonly class DetectOutdatedComposerPackagesAction
@@ -21,14 +21,12 @@ final readonly class DetectOutdatedComposerPackagesAction
         private BuildSafeRecommendationAction $buildSafeRecommendation,
     ) {}
 
-    /** @return list<OutdatedPackageFindingData> */
-    public function execute(?string $basepath = null): array
+    /**
+     * @param  list<PackageData>  $packages
+     * @return list<OutdatedPackageFindingData>
+     */
+    public function execute(string $basepath, array $packages): array
     {
-        $basepath ??= base_path();
-
-        /** @var array{require?: array<string, string>, require-dev?: array<string, string>} $composerJson */
-        $composerJson = $this->readJson($basepath.'/composer.json');
-
         /** @var array{installed?: list<array<string, mixed>>} $outdatedReport */
         $outdatedReport = $this->readJson($basepath.'/composer-outdated.json');
 
@@ -37,11 +35,7 @@ final readonly class DetectOutdatedComposerPackagesAction
             $outdatedReport = $this->readCommandJson(['composer', 'outdated', '--direct', '--format=json'], $basepath);
         }
 
-        $directDependencies = [
-            ...$this->composerDirectDependencies($composerJson['require'] ?? [], DependencyType::Production),
-            ...$this->composerDirectDependencies($composerJson['require-dev'] ?? [], DependencyType::Development),
-        ];
-
+        $directPackages = $this->directPackagesByName($packages);
         $findings = [];
 
         foreach ($outdatedReport['installed'] ?? [] as $outdatedPackage) {
@@ -53,7 +47,9 @@ final readonly class DetectOutdatedComposerPackagesAction
                 continue;
             }
 
-            if (! isset($directDependencies[$name])) {
+            $package = $directPackages[$name] ?? null;
+
+            if (! $package instanceof PackageData) {
                 continue;
             }
 
@@ -72,7 +68,7 @@ final readonly class DetectOutdatedComposerPackagesAction
                 currentVersion: ltrim($currentVersion, 'v'),
                 latestVersion: ltrim($latestVersion, 'v'),
                 updateType: $this->classifyUpdateType($currentVersion, $latestVersion),
-                dependencyType: $directDependencies[$name],
+                dependencyType: $package->dependencyType,
                 isDirect: true,
             );
 
@@ -82,5 +78,24 @@ final readonly class DetectOutdatedComposerPackagesAction
         }
 
         return $findings;
+    }
+
+    /**
+     * @param  list<PackageData>  $packages
+     * @return array<string, PackageData>
+     */
+    private function directPackagesByName(array $packages): array
+    {
+        $directPackages = [];
+
+        foreach ($packages as $package) {
+            if ($package->isDirect !== true) {
+                continue;
+            }
+
+            $directPackages[$package->name] = $package;
+        }
+
+        return $directPackages;
     }
 }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar\Concerns;
 
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
+use Symfony\Component\Process\Process;
+
 trait RunsReadOnlyCommands
 {
     /**
@@ -35,57 +38,17 @@ trait RunsReadOnlyCommands
             return null;
         }
 
-        $descriptorSpec = [
-            0 => ['pipe', 'r'],
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ];
+        $process = new Process($command, $basePath, timeout: $this->commandTimeout());
 
-        $process = proc_open($command, $descriptorSpec, $pipes, $basePath);
-
-        if (! is_resource($process)) {
-            return null;
+        try {
+            $process->run();
+        } catch (ProcessTimedOutException) {
+            $process->stop();
         }
 
-        fclose($pipes[0]);
-
-        $timeout = $this->commandTimeout();
-        $startedAt = time();
-
-        stream_set_blocking($pipes[1], false);
-        stream_set_blocking($pipes[2], false);
-
-        $output = '';
-        $errorOutput = '';
-
-        while (true) {
-            $status = proc_get_status($process);
-
-            if (! $status['running']) {
-                break;
-            }
-
-            $output .= stream_get_contents($pipes[1]) ?: '';
-            $errorOutput .= stream_get_contents($pipes[2]) ?: '';
-
-            if ((time() - $startedAt) >= $timeout) {
-                proc_terminate($process);
-
-                break;
-            }
-
-            usleep(100_000);
-        }
-
-        $output .= stream_get_contents($pipes[1]) ?: '';
-        $errorOutput .= stream_get_contents($pipes[2]) ?: '';
-
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-
-        proc_close($process);
-
-        $contents = $output !== '' ? $output : $errorOutput;
+        $contents = $process->getOutput() !== ''
+            ? $process->getOutput()
+            : $process->getErrorOutput();
 
         return $contents !== '' ? $contents : null;
     }

@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use JoshDonnell\Radar\Actions\DetectComposerVulnerabilitiesAction;
+use JoshDonnell\Radar\Actions\ParseComposerPackagesAction;
+
+beforeEach(function (): void {
+    $this->basepath = __DIR__.'/../Fixtures';
+    $this->packages = app(ParseComposerPackagesAction::class)->execute($this->basepath);
+});
 
 it('detects composer vulnerabilities', function (): void {
-    $findings = app(DetectComposerVulnerabilitiesAction::class)->execute(
-        basepath: __DIR__.'/../Fixtures',
-    );
+    $findings = app(DetectComposerVulnerabilitiesAction::class)->execute($this->basepath, $this->packages);
 
     expect($findings)->toHaveCount(2);
 
@@ -39,7 +43,8 @@ it('detects composer vulnerabilities', function (): void {
 
 it('returns an empty list when composer audit output is missing', function (): void {
     $findings = app(DetectComposerVulnerabilitiesAction::class)->execute(
-        basepath: __DIR__.'/../Fixtures/missing-project',
+        __DIR__.'/../Fixtures/missing-project',
+        [],
     );
 
     expect($findings)->toBe([]);

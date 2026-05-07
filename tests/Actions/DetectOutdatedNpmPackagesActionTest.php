@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use JoshDonnell\Radar\Actions\DetectOutdatedNpmPackagesAction;
+use JoshDonnell\Radar\Actions\ParseNpmPackagesAction;
+
+beforeEach(function (): void {
+    $this->basepath = __DIR__.'/../Fixtures';
+    $this->packages = app(ParseNpmPackagesAction::class)->execute($this->basepath);
+});
 
 it('detects outdated direct npm packages', function (): void {
-    $findings = app(DetectOutdatedNpmPackagesAction::class)->execute(
-        basepath: __DIR__.'/../Fixtures',
-    );
+    $findings = app(DetectOutdatedNpmPackagesAction::class)->execute($this->basepath, $this->packages);
 
     expect($findings)->toHaveCount(2);
 
@@ -38,7 +42,8 @@ it('detects outdated direct npm packages', function (): void {
 
 it('returns an empty list when npm outdated output is missing', function (): void {
     $findings = app(DetectOutdatedNpmPackagesAction::class)->execute(
-        basepath: __DIR__.'/../Fixtures/missing-project',
+        __DIR__.'/../Fixtures/missing-project',
+        [],
     );
 
     expect($findings)->toBe([]);
