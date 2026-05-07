@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use JoshDonnell\Radar\Actions\DetectNpmVulnerabilitiesAction;
+use JoshDonnell\Radar\Actions\ParseNpmPackagesAction;
+
+beforeEach(function (): void {
+    $this->basepath = __DIR__.'/../Fixtures';
+    $this->packages = app(ParseNpmPackagesAction::class)->execute($this->basepath);
+});
 
 it('detects npm vulnerabilities', function (): void {
-    $findings = app(DetectNpmVulnerabilitiesAction::class)->execute(
-        basepath: __DIR__.'/../Fixtures',
-    );
+    $findings = app(DetectNpmVulnerabilitiesAction::class)->execute($this->basepath, $this->packages);
 
     expect($findings)->toHaveCount(2);
 
@@ -70,6 +74,8 @@ it('matches duplicate npm package vulnerabilities by audit nodes', function (): 
     ], JSON_PRETTY_PRINT));
 
     try {
+        $packages = app(ParseNpmPackagesAction::class)->execute($basepath);
+
         file_put_contents($basepath.'/npm-audit.json', json_encode([
             'auditReportVersion' => 2,
             'vulnerabilities' => [
@@ -92,7 +98,7 @@ it('matches duplicate npm package vulnerabilities by audit nodes', function (): 
             ],
         ], JSON_PRETTY_PRINT));
 
-        $nestedFindings = app(DetectNpmVulnerabilitiesAction::class)->execute($basepath);
+        $nestedFindings = app(DetectNpmVulnerabilitiesAction::class)->execute($basepath, $packages);
 
         file_put_contents($basepath.'/npm-audit.json', json_encode([
             'auditReportVersion' => 2,
@@ -115,7 +121,7 @@ it('matches duplicate npm package vulnerabilities by audit nodes', function (): 
             ],
         ], JSON_PRETTY_PRINT));
 
-        $directFindings = app(DetectNpmVulnerabilitiesAction::class)->execute($basepath);
+        $directFindings = app(DetectNpmVulnerabilitiesAction::class)->execute($basepath, $packages);
 
         expect($nestedFindings)->toHaveCount(1)
             ->and($nestedFindings[0]->toArray())->toMatchArray([
@@ -146,7 +152,8 @@ it('matches duplicate npm package vulnerabilities by audit nodes', function (): 
 
 it('returns an empty list when npm audit output is missing', function (): void {
     $findings = app(DetectNpmVulnerabilitiesAction::class)->execute(
-        basepath: __DIR__.'/../Fixtures/missing-project',
+        __DIR__.'/../Fixtures/missing-project',
+        [],
     );
 
     expect($findings)->toBe([]);

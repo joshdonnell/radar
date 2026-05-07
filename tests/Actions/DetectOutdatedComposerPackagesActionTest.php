@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use JoshDonnell\Radar\Actions\DetectOutdatedComposerPackagesAction;
+use JoshDonnell\Radar\Actions\ParseComposerPackagesAction;
+
+beforeEach(function (): void {
+    $this->basepath = __DIR__.'/../Fixtures';
+    $this->packages = app(ParseComposerPackagesAction::class)->execute($this->basepath);
+});
 
 it('detects outdated direct composer packages', function (): void {
-    $findings = app(DetectOutdatedComposerPackagesAction::class)->execute(
-        basepath: __DIR__.'/../Fixtures',
-    );
+    $findings = app(DetectOutdatedComposerPackagesAction::class)->execute($this->basepath, $this->packages);
 
     expect($findings)->toHaveCount(2);
 
@@ -38,7 +42,8 @@ it('detects outdated direct composer packages', function (): void {
 
 it('returns an empty list when composer outdated output is missing', function (): void {
     $findings = app(DetectOutdatedComposerPackagesAction::class)->execute(
-        basepath: __DIR__.'/../Fixtures/missing-project',
+        __DIR__.'/../Fixtures/missing-project',
+        [],
     );
 
     expect($findings)->toBe([]);

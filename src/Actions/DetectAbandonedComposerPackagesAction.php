@@ -6,47 +6,35 @@ namespace JoshDonnell\Radar\Actions;
 
 use JoshDonnell\Radar\Concerns\ReadsJsonFiles;
 use JoshDonnell\Radar\Data\AbandonedPackageFindingData;
-use JoshDonnell\Radar\Enums\DependencyType;
+use JoshDonnell\Radar\Data\PackageData;
 use JoshDonnell\Radar\Enums\Ecosystem;
 
 final readonly class DetectAbandonedComposerPackagesAction
 {
     use ReadsJsonFiles;
 
-    /** @return list<AbandonedPackageFindingData> */
-    public function execute(?string $basepath = null): array
+    /**
+     * @param  list<PackageData>  $packages
+     * @return list<AbandonedPackageFindingData>
+     */
+    public function execute(string $basepath, array $packages): array
     {
-        $basepath ??= base_path();
-
-        /** @var array{require?: array<string, string>, require-dev?: array<string, string>} $composerJson */
-        $composerJson = $this->readJson($basepath.'/composer.json');
-
         /** @var array{packages?: list<array<string, mixed>>, packages-dev?: list<array<string, mixed>>} $composerLock */
         $composerLock = $this->readJson($basepath.'/composer.lock');
-
-        $productionDependencies = $this->composerDirectDependencies($composerJson['require'] ?? [], DependencyType::Production);
-        $developmentDependencies = $this->composerDirectDependencies($composerJson['require-dev'] ?? [], DependencyType::Development);
+        $packagesByName = $this->packagesByName($packages);
 
         return [
-            ...$this->findings(
-                lockedPackages: $composerLock['packages'] ?? [],
-                directDependencies: $productionDependencies,
-                dependencyType: DependencyType::Production,
-            ),
-            ...$this->findings(
-                lockedPackages: $composerLock['packages-dev'] ?? [],
-                directDependencies: $developmentDependencies,
-                dependencyType: DependencyType::Development,
-            ),
+            ...$this->findings($composerLock['packages'] ?? [], $packagesByName),
+            ...$this->findings($composerLock['packages-dev'] ?? [], $packagesByName),
         ];
     }
 
     /**
      * @param  list<array<string, mixed>>  $lockedPackages
-     * @param  array<string, DependencyType>  $directDependencies
+     * @param  array<string, PackageData>  $packagesByName
      * @return list<AbandonedPackageFindingData>
      */
-    private function findings(array $lockedPackages, array $directDependencies, DependencyType $dependencyType): array
+    private function findings(array $lockedPackages, array $packagesByName): array
     {
         $findings = [];
 
@@ -58,13 +46,14 @@ final readonly class DetectAbandonedComposerPackagesAction
             }
 
             $name = $lockedPackage['name'] ?? null;
-            $version = $lockedPackage['version'] ?? null;
 
             if (! is_string($name)) {
                 continue;
             }
 
-            if (! is_string($version)) {
+            $package = $packagesByName[$name] ?? null;
+
+            if (! $package instanceof PackageData) {
                 continue;
             }
 
@@ -74,9 +63,9 @@ final readonly class DetectAbandonedComposerPackagesAction
                 id: 'composer-'.$name,
                 ecosystem: Ecosystem::Composer,
                 packageName: $name,
-                installedVersion: ltrim($version, 'v'),
-                dependencyType: $dependencyType,
-                isDirect: isset($directDependencies[$name]),
+                installedVersion: $package->installedVersion,
+                dependencyType: $package->dependencyType,
+                isDirect: $package->isDirect === true,
                 replacementPackage: $replacementPackage,
                 recommendation: $this->recommendation($name, $replacementPackage),
             );

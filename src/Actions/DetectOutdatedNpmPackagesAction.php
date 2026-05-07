@@ -8,7 +8,7 @@ use JoshDonnell\Radar\Concerns\ClassifiesUpdateTypes;
 use JoshDonnell\Radar\Concerns\ReadsJsonFiles;
 use JoshDonnell\Radar\Concerns\RunsReadOnlyCommands;
 use JoshDonnell\Radar\Data\OutdatedPackageFindingData;
-use JoshDonnell\Radar\Enums\DependencyType;
+use JoshDonnell\Radar\Data\PackageData;
 use JoshDonnell\Radar\Enums\Ecosystem;
 use JoshDonnell\Radar\Enums\NodeRunner;
 
@@ -22,14 +22,12 @@ final readonly class DetectOutdatedNpmPackagesAction
         private BuildSafeRecommendationAction $buildSafeRecommendation,
     ) {}
 
-    /** @return list<OutdatedPackageFindingData> */
-    public function execute(?string $basepath = null): array
+    /**
+     * @param  list<PackageData>  $packages
+     * @return list<OutdatedPackageFindingData>
+     */
+    public function execute(string $basepath, array $packages): array
     {
-        $basepath ??= base_path();
-
-        /** @var array{dependencies?: array<string, string>, devDependencies?: array<string, string>, peerDependencies?: array<string, string>} $packageJson */
-        $packageJson = $this->readJson($basepath.'/package.json');
-
         $outdatedReport = $this->readJson($basepath.'/npm-outdated.json');
         $nodeRunner = NodeRunner::fromProjectPath($basepath);
 
@@ -41,16 +39,13 @@ final readonly class DetectOutdatedNpmPackagesAction
             };
         }
 
-        $directDependencies = [
-            ...$this->directDependencies($packageJson['dependencies'] ?? [], DependencyType::Production),
-            ...$this->directDependencies($packageJson['devDependencies'] ?? [], DependencyType::Development),
-            ...$this->directDependencies($packageJson['peerDependencies'] ?? [], DependencyType::Peer),
-        ];
-
+        $directPackages = $this->directPackagesByName($packages);
         $findings = [];
 
         foreach ($this->normalizeOutdatedReport($outdatedReport) as $name => $outdatedPackage) {
-            if (! isset($directDependencies[$name])) {
+            $package = $directPackages[$name] ?? null;
+
+            if (! $package instanceof PackageData) {
                 continue;
             }
 
@@ -75,7 +70,7 @@ final readonly class DetectOutdatedNpmPackagesAction
                 currentVersion: $currentVersion,
                 latestVersion: $latestVersion,
                 updateType: $this->classifyUpdateType($currentVersion, $latestVersion),
-                dependencyType: $directDependencies[$name],
+                dependencyType: $package->dependencyType,
                 isDirect: true,
             );
 
@@ -88,10 +83,6 @@ final readonly class DetectOutdatedNpmPackagesAction
     }
 
     /**
-     * Normalizes outdated reports from different package managers.
-     * npm outputs an object keyed by package name.
-     * pnpm outputs an array of objects.
-     *
      * @param  array<string, mixed>  $report
      * @return array<string, mixed>
      */
@@ -104,12 +95,10 @@ final readonly class DetectOutdatedNpmPackagesAction
         $firstKey = array_key_first($report);
         $firstValue = $report[$firstKey] ?? null;
 
-        // npm format: object keyed by package name
         if (is_array($firstValue) && array_key_exists('current', $firstValue)) {
             return $report;
         }
 
-        // pnpm format: array of objects with 'alias' key
         if (is_array($firstValue) && array_key_exists('alias', $firstValue)) {
             $normalized = [];
 
@@ -134,5 +123,24 @@ final readonly class DetectOutdatedNpmPackagesAction
         }
 
         return [];
+    }
+
+    /**
+     * @param  list<PackageData>  $packages
+     * @return array<string, PackageData>
+     */
+    private function directPackagesByName(array $packages): array
+    {
+        $directPackages = [];
+
+        foreach ($packages as $package) {
+            if ($package->isDirect !== true) {
+                continue;
+            }
+
+            $directPackages[$package->name] = $package;
+        }
+
+        return $directPackages;
     }
 }
