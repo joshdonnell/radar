@@ -42,7 +42,7 @@ jobs:
         run: npm ci
 
       - name: Cache Composer Dependencies
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: vendor
           key: ${{ runner.os }}-composer-8.3-prefer-stable-${{ hashFiles('composer.json') }}
@@ -63,7 +63,7 @@ jobs:
         run: npm run test:types
 
       - name: Cache PHPStan
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: /tmp/phpstan
           key: ${{ runner.os }}-phpstan-8.3-${{ hashFiles('composer.lock') }}
