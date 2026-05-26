@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "vite": "^7.0.0",
+    "vite": "^7.3.3",
     "other-tool": "^1.0.0"
   }
 }
