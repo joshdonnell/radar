@@ -1,6 +1,7 @@
 <p align="center">
     <h1 align="center">Laravel Radar</h1>
     <p align="center">
+        <a href="https://packagist.org/packages/joshdonnell/radar"><img src="https://badge.laravel.cloud/badge/joshdonnell/radar" alt="Laravel Compatibility"></a>
         <a href="https://github.com/JoshDonnell/radar/actions/workflows/tests.yml"><img alt="Tests" src="https://github.com/JoshDonnell/radar/actions/workflows/tests.yml/badge.svg"></a>
         <a href="https://github.com/JoshDonnell/radar/actions/workflows/formats.yml"><img alt="Formats" src="https://github.com/JoshDonnell/radar/actions/workflows/formats.yml/badge.svg"></a>
         <a href="https://github.com/JoshDonnell/radar/blob/main/LICENSE.md"><img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
