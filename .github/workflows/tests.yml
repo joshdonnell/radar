@@ -35,17 +35,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@8358ee0e2e8afe63c2fb8253d1d52085811ab1e5 # v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: ${{ matrix.php }}
           tools: composer:v2
           coverage: xdebug
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@9446e853b27985e00fb1b21193be026fc09198db # v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version: 24
 
@@ -61,7 +61,7 @@ jobs:
           echo "TESTBENCH=$TESTBENCH" >> $GITHUB_ENV
 
       - name: Cache Composer Dependencies
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: vendor
           key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ matrix.laravel }}-${{ matrix.stability }}-${{ hashFiles('composer.json') }}
