@@ -7,7 +7,6 @@ phpunit.xml
 phpstan.neon
 tmp/
 /workbench
-testbench.yaml
 
 !tests/Fixtures/**/vendor/
 !tests/Fixtures/**/vendor/composer/

@@ -1,0 +1,10 @@
+workbench:
+  start: '/radar'
+  build:
+    - create-sqlite-db
+    - asset-publish
+    - vendor:publish:
+        '--tag': 'radar-migrations'
+    - migrate
+  assets:
+    - radar-assets
