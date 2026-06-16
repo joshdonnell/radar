@@ -2,7 +2,7 @@
   "name": "radar-npm-fixture",
   "private": true,
   "dependencies": {
-    "vite": "^7.0.0",
+    "vite": "^7.3.5",
     "@vueuse/core": "^14.0.0"
   },
   "devDependencies": {
