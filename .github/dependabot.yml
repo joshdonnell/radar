@@ -5,18 +5,18 @@ updates:
     schedule:
       interval: weekly
     exclude-paths:
-      - tests/Fixtures/**
+      - "tests/Fixtures/**"
   - package-ecosystem: composer
     directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 0
     exclude-paths:
-      - tests/Fixtures/**
+      - "tests/Fixtures/**"
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 0
     exclude-paths:
-      - tests/Fixtures/**
+      - "tests/Fixtures/**"
