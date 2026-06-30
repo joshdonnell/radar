@@ -25,12 +25,7 @@ export default defineConfig({
         categories: {
             correctness: "warn",
         },
-        ignorePatterns: [
-            "vendor",
-            "node_modules",
-            "public",
-            "resources/dist",
-        ],
+        ignorePatterns: ["vendor", "node_modules", "public", "resources/dist"],
         options: {
             typeAware: true,
             typeCheck: true,
@@ -47,6 +42,12 @@ export default defineConfig({
         manifest: "manifest.json",
         rollupOptions: {
             input: resolve(__dirname, "resources/js/app.ts"),
+            // @vueuse/core ships /* #__PURE__ */ annotations in positions rolldown
+            // can't interpret. The warnings are harmless third-party build noise.
+            // once upstream fix exists this can be removed
+            checks: {
+                invalidAnnotation: false,
+            },
             output: {
                 codeSplitting: false,
             },
