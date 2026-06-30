@@ -10,18 +10,18 @@
     "test:types": "vue-tsc --noEmit"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.1",
     "@vitejs/plugin-vue": "^6.0.7",
     "typescript": "^6.0.3",
-    "vite-plus": "^0.1.24",
-    "vue": "^3.5.38",
-    "vue-tsc": "^3.3.5"
+    "vite-plus": "^0.2.1",
+    "vue": "^3.5.39",
+    "vue-tsc": "^3.3.6"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.1",
+    "@tailwindcss/vite": "^4.3.2",
     "@vueuse/core": "^14.3.0",
-    "tailwindcss": "^4.3.1",
-    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.24"
+    "tailwindcss": "^4.3.2",
+    "vite": "npm:@voidzero-dev/vite-plus-core@^0.2.1"
   },
-  "packageManager": "npm@11.17.0"
+  "packageManager": "npm@11.18.0"
 }
