@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RadarColor, radarColorClasses } from '../utils/colors'
+import { RadarColor, radarColorClasses } from '~/utils/colors'
 
 const props = withDefaults(
   defineProps<{
@@ -8,47 +8,47 @@ const props = withDefaults(
     value?: number | null
     suffix?: string | null
     color?: RadarColor
+    size?: 'md' | 'lg'
   }>(),
   {
     value: null,
     suffix: null,
-    color: RadarColor.White,
+    color: RadarColor.Fg,
+    size: 'md',
   },
 )
 
-const colorClasses = computed(() => radarColorClasses(props.color))
+const valueColor = computed(() => radarColorClasses(props.color).text)
 
-const displayValue = computed(() => {
-  return props.value !== null ? props.value : '-'
-})
+const displayValue = computed(() => (props.value !== null ? props.value : '—'))
 </script>
 
 <template>
-  <div class="group relative p-5 transition-colors hover:bg-white/[0.01]">
-    <dt
-      class="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-slate-500"
+  <div class="rounded-2xl border border-border bg-surface p-5 sm:p-6">
+    <div
+      class="mb-3.5 flex items-center gap-2.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-muted"
     >
-      <span
-        class="inline-flex h-4 w-4 items-center justify-center rounded text-[9px] font-bold ring-1 ring-inset transition-colors"
-        :class="[colorClasses.bg, colorClasses.text, colorClasses.ring]"
-      >
+      <span class="flex h-4 w-4 items-center justify-center text-muted">
         <slot name="icon" />
       </span>
       {{ label }}
-    </dt>
-    <dd class="mt-3 flex items-baseline gap-1.5">
+    </div>
+
+    <div class="flex items-baseline gap-2">
       <span
-        class="text-3xl font-semibold tracking-tight tabular-nums"
-        :class="colorClasses.text"
+        class="font-bold leading-none tracking-tight tabular-nums"
+        :class="[valueColor, size === 'lg' ? 'text-[52px]' : 'text-[40px]']"
       >
         {{ displayValue }}
       </span>
       <span
         v-if="suffix && value !== null"
-        class="text-xs font-medium text-slate-600"
+        class="text-lg font-medium text-dim"
       >
         {{ suffix }}
       </span>
-    </dd>
+    </div>
+
+    <slot name="breakdown" />
   </div>
 </template>

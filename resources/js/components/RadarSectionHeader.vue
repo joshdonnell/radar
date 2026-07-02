@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RadarColor, radarColorClassList } from '../utils/colors'
-import type { RadarColor as RadarColorValue } from '../utils/colors'
-import RadarBadge from './RadarBadge.vue'
+import RadarBadge from '~/components/RadarBadge.vue'
+import { RadarColor, radarColorClassList } from '~/utils/colors'
+import type { RadarColor as RadarColorValue } from '~/utils/colors'
 
 type SectionColor = Extract<
   RadarColorValue,
-  | typeof RadarColor.Cyan
-  | typeof RadarColor.Rose
-  | typeof RadarColor.Amber
-  | typeof RadarColor.Emerald
+  | typeof RadarColor.Danger
+  | typeof RadarColor.Warning
+  | typeof RadarColor.Success
+  | typeof RadarColor.Abandoned
+  | typeof RadarColor.Neutral
 >
 
 const props = withDefaults(
@@ -20,7 +21,7 @@ const props = withDefaults(
     countColor?: SectionColor
   }>(),
   {
-    countColor: RadarColor.Cyan,
+    countColor: RadarColor.Neutral,
   },
 )
 
@@ -29,22 +30,22 @@ const iconClasses = computed(() => radarColorClassList(props.countColor))
 
 <template>
   <div
-    class="flex items-center justify-between gap-4 border-b border-white/[0.04] px-5 py-4"
+    class="flex items-center justify-between gap-4 border-b border-border px-5 py-4"
   >
     <div class="flex items-center gap-3">
       <span
-        class="flex h-7 w-7 items-center justify-center rounded-lg ring-1 ring-inset"
+        class="flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-inset"
         :class="iconClasses"
       >
         <slot name="icon" />
       </span>
       <div>
-        <h2 class="text-sm font-semibold text-white">{{ title }}</h2>
-        <p class="text-[11px] text-slate-500">{{ subtitle }}</p>
+        <h2 class="text-[15px] font-semibold text-fg">{{ title }}</h2>
+        <p class="text-[12px] text-muted">{{ subtitle }}</p>
       </div>
     </div>
-    <radar-badge :color="countColor" size="md">
+    <RadarBadge :color="countColor" size="md">
       {{ count }}
-    </radar-badge>
+    </RadarBadge>
   </div>
 </template>

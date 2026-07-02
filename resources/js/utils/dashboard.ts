@@ -1,10 +1,10 @@
 export function severityColor(severity: string): string {
   const map: Record<string, string> = {
-    critical: 'bg-rose-500/10 text-rose-300 ring-rose-500/20',
-    high: 'bg-orange-500/10 text-orange-300 ring-orange-500/20',
-    medium: 'bg-amber-500/10 text-amber-300 ring-amber-500/20',
-    low: 'bg-blue-500/10 text-blue-300 ring-blue-500/20',
-    unknown: 'bg-slate-500/10 text-slate-300 ring-slate-500/20',
+    critical: 'bg-danger/10 text-danger ring-danger/30',
+    high: 'bg-danger/10 text-danger ring-danger/25',
+    medium: 'bg-warning/10 text-warning ring-warning/25',
+    low: 'bg-success/10 text-success ring-success/25',
+    unknown: 'bg-surface-2 text-muted ring-border-strong',
   }
 
   return map[severity.toLowerCase()] ?? map.unknown
@@ -12,12 +12,18 @@ export function severityColor(severity: string): string {
 
 export function updateColor(type: string): string {
   const map: Record<string, string> = {
-    major: 'bg-rose-500/10 text-rose-300 ring-rose-500/20',
-    minor: 'bg-amber-500/10 text-amber-300 ring-amber-500/20',
-    patch: 'bg-emerald-500/10 text-emerald-300 ring-emerald-500/20',
+    major: 'bg-danger/10 text-danger ring-danger/25',
+    minor: 'bg-warning/10 text-warning ring-warning/25',
+    patch: 'bg-success/10 text-success ring-success/25',
   }
 
   return map[type.toLowerCase()] ?? map.patch
+}
+
+export function relationColor(isDirect: boolean): string {
+  return isDirect
+    ? 'bg-success/10 text-success ring-success/25'
+    : 'bg-surface-2 text-muted ring-border-strong'
 }
 
 export function parentUpdateCommand(ecosystem: string, parent: string): string {

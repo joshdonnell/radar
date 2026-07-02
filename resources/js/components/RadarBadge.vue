@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RadarColor, radarColorClasses } from '../utils/colors'
+import { RadarColor, radarColorClasses } from '~/utils/colors'
 
 const props = withDefaults(
   defineProps<{
@@ -8,7 +8,7 @@ const props = withDefaults(
     size?: 'sm' | 'md'
   }>(),
   {
-    color: RadarColor.White,
+    color: RadarColor.Fg,
     size: 'sm',
   },
 )

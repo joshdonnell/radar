@@ -1,38 +1,24 @@
 <script setup lang="ts">
 defineProps<{
   message: string
-  iconColor?: 'emerald' | 'slate'
 }>()
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center px-5 py-10">
+  <div class="flex flex-col items-center justify-center px-5 py-8">
     <div
-      class="flex h-10 w-10 items-center justify-center rounded-full ring-1 ring-inset"
-      :class="
-        iconColor === 'slate'
-          ? 'bg-slate-500/5 ring-slate-500/10'
-          : 'bg-emerald-500/5 ring-emerald-500/10'
-      "
+      class="flex h-8 w-8 items-center justify-center rounded-full bg-success/[0.08] ring-1 ring-inset ring-success/15"
     >
-      <slot name="icon">
-        <svg
-          class="h-4 w-4"
-          :class="
-            iconColor === 'slate' ? 'text-slate-500' : 'text-emerald-400/60'
-          "
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      </slot>
+      <svg
+        class="h-3.5 w-3.5 text-success"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
     </div>
-    <p class="mt-3 text-xs text-slate-500">
-      <slot name="message">{{ message }}</slot>
-    </p>
-    <slot name="action" />
+    <p class="mt-2.5 text-xs text-muted">{{ message }}</p>
   </div>
 </template>

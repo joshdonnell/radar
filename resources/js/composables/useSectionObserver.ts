@@ -1,20 +1,14 @@
 import { useIntersectionObserver } from '@vueuse/core'
 import { computed, ref } from 'vue'
 
-type SectionElement = {
-  readonly value: HTMLElement | null
-}
-
 export function useSectionObserver(
-  sectionElements: Record<string, SectionElement>,
+  getSections: () => (HTMLElement | null)[],
+  initialSection = '',
 ) {
-  const sectionEntries = Object.entries(sectionElements)
-  const activeSection = ref(sectionEntries[0]?.[0] ?? '')
+  const activeSection = ref(initialSection)
 
   const sections = computed(() =>
-    sectionEntries
-      .map(([, sectionElement]) => sectionElement.value)
-      .filter((section): section is HTMLElement => section !== null),
+    getSections().filter((section): section is HTMLElement => section !== null),
   )
 
   useIntersectionObserver(

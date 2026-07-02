@@ -9,7 +9,7 @@ withDefaults(
   }>(),
   {
     variant: 'secondary',
-    size: 'sm',
+    size: 'md',
     loading: false,
     disabled: false,
     ariaLabel: undefined,
@@ -21,21 +21,20 @@ defineEmits<{
 }>()
 
 const variantClasses: Record<string, string> = {
-  primary:
-    'bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-950/30 hover:bg-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F19]',
+  primary: 'border-fg bg-fg text-bg hover:bg-fg/90',
   secondary:
-    'bg-cyan-500/10 text-cyan-300 ring-1 ring-inset ring-cyan-500/15 hover:bg-cyan-500/15',
+    'border-border-strong bg-surface-2 text-fg hover:border-dim hover:bg-surface-2/70',
 }
 
 const sizeClasses: Record<string, string> = {
-  sm: 'px-2.5 py-1 text-[11px] gap-1.5',
-  md: 'px-4 py-2.5 text-sm gap-2',
+  sm: 'gap-1.5 rounded-lg px-3 py-1.5 text-[12px]',
+  md: 'gap-2 rounded-lg px-4 py-2.5 text-[13px]',
 }
 </script>
 
 <template>
   <button
-    class="inline-flex cursor-pointer items-center rounded-full font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40"
+    class="inline-flex cursor-pointer items-center border font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/30 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
     :class="[variantClasses[variant], sizeClasses[size]]"
     :disabled="disabled || loading"
     :aria-label="ariaLabel"
@@ -44,7 +43,7 @@ const sizeClasses: Record<string, string> = {
     <svg
       v-if="loading"
       class="animate-spin"
-      :class="size === 'sm' ? 'h-3 w-3' : 'h-4 w-4'"
+      :class="size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

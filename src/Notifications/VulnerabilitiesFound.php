@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar\Notifications;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackAttachment;
 use Illuminate\Notifications\Messages\SlackMessage;
@@ -88,10 +89,16 @@ final class VulnerabilitiesFound extends Notification
     {
         $total = count($this->notification->vulnerabilities);
 
-        return sprintf(
+        $subject = sprintf(
             '[Radar] %d vulnerabilit%s detected',
             $total,
             $total === 1 ? 'y' : 'ies',
         );
+
+        if ($this->notification->scannedAt instanceof CarbonImmutable) {
+            $subject .= sprintf(' (%s)', $this->notification->scannedAt->format('M j, Y'));
+        }
+
+        return $subject;
     }
 }

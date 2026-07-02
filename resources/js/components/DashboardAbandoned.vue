@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import type { AbandonedPackageRecord } from '@/types/scan'
-import RadarEmptyState from './RadarEmptyState.vue'
-import RadarSectionHeader from './RadarSectionHeader.vue'
+import RadarEmptyState from '~/components/RadarEmptyState.vue'
+import RadarSectionHeader from '~/components/RadarSectionHeader.vue'
+import RadarStatusBadge from '~/components/RadarStatusBadge.vue'
+import type { AbandonedPackageRecord } from '~/types/scan'
+import { relationColor } from '~/utils/dashboard'
 
 defineProps<{
   abandonedPackages: AbandonedPackageRecord[]
@@ -11,77 +13,74 @@ defineProps<{
 <template>
   <section
     id="radar-abandoned"
-    class="scroll-mt-24 overflow-hidden rounded-2xl border border-white/[0.04] bg-[#0f1420]/80 shadow-xl shadow-black/20"
+    class="scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-surface"
   >
-    <radar-section-header
+    <RadarSectionHeader
       title="Abandoned packages"
       subtitle="Composer packages marked as abandoned in the lock file."
       :count="abandonedPackages.length + ' abandoned'"
-      count-color="amber"
+      count-color="abandoned"
     >
       <template #icon>
         <svg
-          class="h-3.5 w-3.5"
+          class="h-4 w-4"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="2"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
         >
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
+          <path d="M6 4h12v9a6 6 0 01-12 0z" />
+          <path d="M9 21h6M12 17v4" />
         </svg>
       </template>
-    </radar-section-header>
+    </RadarSectionHeader>
 
-    <div v-if="abandonedPackages.length" class="divide-y divide-white/[0.03]">
+    <div v-if="abandonedPackages.length" class="divide-y divide-border">
       <article
         v-for="abandonedPackage in abandonedPackages"
         :key="abandonedPackage.id"
-        class="group px-5 py-4 transition-colors hover:bg-white/[0.01]"
+        class="px-5 py-4 transition-colors hover:bg-surface-2/30"
       >
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
-            <h3 class="text-sm font-medium text-white">
+            <h3 class="font-mono text-sm font-semibold text-fg">
               {{ abandonedPackage.package_name }}
             </h3>
-            <p class="mt-0.5 text-[11px] text-slate-600">
+            <p class="mt-1.5 flex items-center gap-2 text-[12px] text-muted">
               <code
-                class="rounded bg-white/[0.03] px-1 py-px font-mono text-slate-500 ring-1 ring-inset ring-white/[0.05]"
+                class="rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 font-mono text-muted"
               >
                 {{ abandonedPackage.installed_version }}
               </code>
-              <span class="mx-1 text-slate-800">·</span>
-              {{ abandonedPackage.dependency_type }}
+              <span>{{ abandonedPackage.dependency_type }}</span>
             </p>
           </div>
-          <span
-            class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset"
-            :class="
-              abandonedPackage.is_direct
-                ? 'bg-emerald-500/10 text-emerald-300 ring-emerald-500/15'
-                : 'bg-slate-500/10 text-slate-400 ring-slate-500/15'
-            "
-          >
-            {{ abandonedPackage.is_direct ? 'Direct' : 'Transitive' }}
-          </span>
+          <RadarStatusBadge
+            :label="abandonedPackage.is_direct ? 'Direct' : 'Transitive'"
+            :color-class="relationColor(abandonedPackage.is_direct)"
+          />
         </div>
         <p
           v-if="abandonedPackage.replacement_package"
-          class="mt-2 text-xs text-slate-400"
+          class="mt-2.5 text-[13px] text-fg/80"
         >
-          Replacement: {{ abandonedPackage.replacement_package }}
+          Replacement:
+          <span class="font-mono">{{
+            abandonedPackage.replacement_package
+          }}</span>
         </p>
         <p
           v-if="abandonedPackage.recommendation"
-          class="mt-1 text-[11px] text-slate-600"
+          class="mt-1 text-[12px] text-muted"
         >
           {{ abandonedPackage.recommendation }}
         </p>
       </article>
     </div>
 
-    <radar-empty-state
+    <RadarEmptyState
       v-else
       message="No abandoned packages recorded in this scan."
     />

@@ -9,5 +9,5 @@
         };
     </script>
 
-    <div id="radar"></div>
+    <div id="radar" class="bg-bg text-fg font-serif"></div>
 @endsection

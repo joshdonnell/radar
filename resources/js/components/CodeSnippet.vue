@@ -6,7 +6,7 @@ const props = defineProps<{
 }>()
 
 const { copied, copy } = useClipboard({
-  copiedDuring: 2000,
+  copiedDuring: 1300,
   legacy: true,
 })
 
@@ -16,54 +16,45 @@ const copyCommand = () => {
 </script>
 
 <template>
-  <div
-    class="group relative flex items-center gap-2 overflow-hidden rounded-lg bg-slate-950/60 px-3 py-2 ring-1 ring-inset ring-white/[0.06] transition-colors hover:ring-white/[0.10]"
+  <button
+    type="button"
+    class="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-border bg-inset px-3.5 py-3 text-left transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/20"
+    :aria-label="`Copy command: ${command}`"
+    @click="copyCommand"
   >
+    <span class="shrink-0 font-mono text-sm font-semibold text-success"
+      >&gt;</span
+    >
+    <code class="min-w-0 flex-1 truncate font-mono text-[12.5px] text-fg/80">
+      {{ command }}
+    </code>
+    <span v-if="copied" class="shrink-0 text-[11px] font-semibold text-success">
+      Copied
+    </span>
     <svg
-      class="h-3.5 w-3.5 shrink-0 text-cyan-400/70"
+      v-if="copied"
+      class="h-[15px] w-[15px] shrink-0 text-success"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      stroke-width="2.5"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     >
-      <polyline points="4 17 10 11 4 5" />
-      <line x1="12" y1="19" x2="20" y2="19" />
+      <polyline points="20 6 9 17 4 12" />
     </svg>
-    <code class="min-w-0 truncate font-mono text-xs text-cyan-200">
-      {{ command }}
-    </code>
-    <button
-      class="ml-auto inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wider transition-all"
-      :class="
-        copied
-          ? 'bg-emerald-400/10 text-emerald-300 ring-1 ring-inset ring-emerald-400/20'
-          : 'bg-white/[0.04] text-slate-400 opacity-0 ring-1 ring-inset ring-white/[0.06] group-hover:opacity-100 focus-visible:opacity-100 hover:bg-white/[0.08] hover:text-white'
-      "
-      aria-label="Copy command"
-      @click="copyCommand"
+    <svg
+      v-else
+      class="h-[15px] w-[15px] shrink-0 text-dim"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     >
-      <svg
-        v-if="copied"
-        class="h-3 w-3"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-      >
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-      <svg
-        v-else
-        class="h-3 w-3"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-      >
-        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-      </svg>
-      {{ copied ? 'Copied' : 'Copy' }}
-    </button>
-  </div>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V5a2 2 0 012-2h8" />
+    </svg>
+  </button>
 </template>

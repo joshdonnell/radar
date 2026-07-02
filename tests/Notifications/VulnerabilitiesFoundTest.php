@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Carbon\CarbonImmutable;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
 use JoshDonnell\Radar\Data\VulnerabilityFindingData;
@@ -76,6 +77,29 @@ it('builds a useful slack notification', function (): void {
         ->content->toContain('Found 2 vulnerabilities')
         ->content->not->toContain('scan-abc-123')
         ->actions->toHaveCount(1);
+});
+
+it('includes the scan date in the mail subject when available', function (): void {
+    $mail = (new VulnerabilitiesFound(
+        notification: new VulnerabilityNotificationData(
+            scanId: 'scan-abc-123',
+            vulnerabilities: [
+                new VulnerabilityFindingData(
+                    id: 'vuln-1',
+                    ecosystem: Ecosystem::Composer,
+                    packageName: 'foo/bar',
+                    installedVersion: '1.2.3',
+                    severity: VulnerabilitySeverity::High,
+                    advisoryId: 'CVE-2025-0001',
+                    isDirect: true,
+                ),
+            ],
+            scannedAt: CarbonImmutable::create(2026, 7, 2),
+        ),
+        channels: ['mail'],
+    ))->toMail(new AnonymousNotifiable());
+
+    expect($mail->subject)->toBe('[Radar] 1 vulnerability detected (Jul 2, 2026)');
 });
 
 /** @param list<'mail'|'slack'> $channels */
