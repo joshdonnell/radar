@@ -1,95 +1,78 @@
 {
-  "_fonts-Cab56ALd.css": {
-    "file": "assets/fonts-Cab56ALd.css",
-    "src": "_fonts-Cab56ALd.css"
+  "node_modules/@fontsource-variable/inter/files/inter-cyrillic-ext-wght-normal.woff2": {
+    "file": "assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-cyrillic-ext-wght-normal.woff2"
   },
-  "_inter-400-italic-0pjOp8NU.woff2": {
-    "file": "assets/inter-400-italic-0pjOp8NU.woff2",
-    "src": "_inter-400-italic-0pjOp8NU.woff2"
+  "node_modules/@fontsource-variable/inter/files/inter-cyrillic-wght-normal.woff2": {
+    "file": "assets/inter-cyrillic-wght-normal-DqGufNeO.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-cyrillic-wght-normal.woff2"
   },
-  "_inter-400-italic-B5xAaiFk.woff2": {
-    "file": "assets/inter-400-italic-B5xAaiFk.woff2",
-    "src": "_inter-400-italic-B5xAaiFk.woff2"
+  "node_modules/@fontsource-variable/inter/files/inter-greek-ext-wght-normal.woff2": {
+    "file": "assets/inter-greek-ext-wght-normal-DlzME5K_.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-greek-ext-wght-normal.woff2"
   },
-  "_inter-400-italic-CILZdfAp.woff2": {
-    "file": "assets/inter-400-italic-CILZdfAp.woff2",
-    "src": "_inter-400-italic-CILZdfAp.woff2"
+  "node_modules/@fontsource-variable/inter/files/inter-greek-wght-normal.woff2": {
+    "file": "assets/inter-greek-wght-normal-CkhJZR-_.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-greek-wght-normal.woff2"
   },
-  "_inter-400-italic-DcOpz6Lw.woff2": {
-    "file": "assets/inter-400-italic-DcOpz6Lw.woff2",
-    "src": "_inter-400-italic-DcOpz6Lw.woff2"
+  "node_modules/@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2": {
+    "file": "assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2"
   },
-  "_inter-400-italic-DpCbqKDY.woff2": {
-    "file": "assets/inter-400-italic-DpCbqKDY.woff2",
-    "src": "_inter-400-italic-DpCbqKDY.woff2"
+  "node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2": {
+    "file": "assets/inter-latin-wght-normal-Dx4kXJAl.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2"
   },
-  "_inter-400-italic-DzZdc28x.woff2": {
-    "file": "assets/inter-400-italic-DzZdc28x.woff2",
-    "src": "_inter-400-italic-DzZdc28x.woff2"
+  "node_modules/@fontsource-variable/inter/files/inter-vietnamese-wght-normal.woff2": {
+    "file": "assets/inter-vietnamese-wght-normal-CBcvBZtf.woff2",
+    "src": "node_modules/@fontsource-variable/inter/files/inter-vietnamese-wght-normal.woff2"
   },
-  "_inter-400-italic-K3WlGtc8.woff2": {
-    "file": "assets/inter-400-italic-K3WlGtc8.woff2",
-    "src": "_inter-400-italic-K3WlGtc8.woff2"
+  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-ext-wght-normal.woff2": {
+    "file": "assets/jetbrains-mono-cyrillic-ext-wght-normal-EocZY2iu.woff2",
+    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-ext-wght-normal.woff2"
   },
-  "_inter-400-normal-BOeWTOD4.woff2": {
-    "file": "assets/inter-400-normal-BOeWTOD4.woff2",
-    "src": "_inter-400-normal-BOeWTOD4.woff2"
+  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-wght-normal.woff2": {
+    "file": "assets/jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2",
+    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-wght-normal.woff2"
   },
-  "_inter-400-normal-CBcvBZtf.woff2": {
-    "file": "assets/inter-400-normal-CBcvBZtf.woff2",
-    "src": "_inter-400-normal-CBcvBZtf.woff2"
+  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-greek-wght-normal.woff2": {
+    "file": "assets/jetbrains-mono-greek-wght-normal-Bw9x6K1M.woff2",
+    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-greek-wght-normal.woff2"
   },
-  "_inter-400-normal-CkhJZR-_.woff2": {
-    "file": "assets/inter-400-normal-CkhJZR-_.woff2",
-    "src": "_inter-400-normal-CkhJZR-_.woff2"
+  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-ext-wght-normal.woff2": {
+    "file": "assets/jetbrains-mono-latin-ext-wght-normal-DBQx-q_a.woff2",
+    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-ext-wght-normal.woff2"
   },
-  "_inter-400-normal-DO1Apj_S.woff2": {
-    "file": "assets/inter-400-normal-DO1Apj_S.woff2",
-    "src": "_inter-400-normal-DO1Apj_S.woff2"
+  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2": {
+    "file": "assets/jetbrains-mono-latin-wght-normal-B9CIFXIH.woff2",
+    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2"
   },
-  "_inter-400-normal-DlzME5K_.woff2": {
-    "file": "assets/inter-400-normal-DlzME5K_.woff2",
-    "src": "_inter-400-normal-DlzME5K_.woff2"
-  },
-  "_inter-400-normal-DqGufNeO.woff2": {
-    "file": "assets/inter-400-normal-DqGufNeO.woff2",
-    "src": "_inter-400-normal-DqGufNeO.woff2"
-  },
-  "_inter-400-normal-Dx4kXJAl.woff2": {
-    "file": "assets/inter-400-normal-Dx4kXJAl.woff2",
-    "src": "_inter-400-normal-Dx4kXJAl.woff2"
-  },
-  "_jetbrains-mono-400-normal-6fWv1k7M.woff2": {
-    "file": "assets/jetbrains-mono-400-normal-6fWv1k7M.woff2",
-    "src": "_jetbrains-mono-400-normal-6fWv1k7M.woff2"
-  },
-  "_jetbrains-mono-400-normal-BIM06flf.woff2": {
-    "file": "assets/jetbrains-mono-400-normal-BIM06flf.woff2",
-    "src": "_jetbrains-mono-400-normal-BIM06flf.woff2"
-  },
-  "_jetbrains-mono-400-normal-BehTv68k.woff2": {
-    "file": "assets/jetbrains-mono-400-normal-BehTv68k.woff2",
-    "src": "_jetbrains-mono-400-normal-BehTv68k.woff2"
-  },
-  "_jetbrains-mono-400-normal-Buze_B52.woff2": {
-    "file": "assets/jetbrains-mono-400-normal-Buze_B52.woff2",
-    "src": "_jetbrains-mono-400-normal-Buze_B52.woff2"
-  },
-  "_jetbrains-mono-400-normal-D3oMJlXt.woff2": {
-    "file": "assets/jetbrains-mono-400-normal-D3oMJlXt.woff2",
-    "src": "_jetbrains-mono-400-normal-D3oMJlXt.woff2"
-  },
-  "_jetbrains-mono-400-normal-DIC32ArD.woff2": {
-    "file": "assets/jetbrains-mono-400-normal-DIC32ArD.woff2",
-    "src": "_jetbrains-mono-400-normal-DIC32ArD.woff2"
+  "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-vietnamese-wght-normal.woff2": {
+    "file": "assets/jetbrains-mono-vietnamese-wght-normal-Bt-aOZkq.woff2",
+    "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-vietnamese-wght-normal.woff2"
   },
   "resources/js/app.ts": {
-    "file": "assets/app-CrieuKcz.js",
+    "file": "assets/app-BPXoDmiP.js",
     "name": "app",
     "src": "resources/js/app.ts",
     "isEntry": true,
     "css": [
-      "assets/app-B9yU6CLk.css"
+      "assets/app-DusTZw_U.css"
+    ],
+    "assets": [
+      "assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2",
+      "assets/inter-cyrillic-wght-normal-DqGufNeO.woff2",
+      "assets/inter-greek-ext-wght-normal-DlzME5K_.woff2",
+      "assets/inter-greek-wght-normal-CkhJZR-_.woff2",
+      "assets/inter-vietnamese-wght-normal-CBcvBZtf.woff2",
+      "assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2",
+      "assets/inter-latin-wght-normal-Dx4kXJAl.woff2",
+      "assets/jetbrains-mono-cyrillic-ext-wght-normal-EocZY2iu.woff2",
+      "assets/jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2",
+      "assets/jetbrains-mono-greek-wght-normal-Bw9x6K1M.woff2",
+      "assets/jetbrains-mono-vietnamese-wght-normal-Bt-aOZkq.woff2",
+      "assets/jetbrains-mono-latin-ext-wght-normal-DBQx-q_a.woff2",
+      "assets/jetbrains-mono-latin-wght-normal-B9CIFXIH.woff2"
     ]
   }
 }

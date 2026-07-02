@@ -51,6 +51,7 @@ defineProps<{
           </h3>
           <RadarVersionDiff
             class="mt-2"
+            tone="neutral"
             :current="outdatedPackage.current_version"
             :patched="outdatedPackage.latest_version"
           />

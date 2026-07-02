@@ -8,6 +8,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use JoshDonnell\Radar\Commands\ClearCommand;
 use JoshDonnell\Radar\Commands\NotifyCommand;
 use JoshDonnell\Radar\Commands\ScanCommand;
+use JoshDonnell\Radar\Commands\UpgradeCommand;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -49,6 +50,7 @@ final class RadarServiceProvider extends PackageServiceProvider
                 ClearCommand::class,
                 NotifyCommand::class,
                 ScanCommand::class,
+                UpgradeCommand::class,
             ])
             ->hasViews()
             ->hasAssets()

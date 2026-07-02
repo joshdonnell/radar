@@ -1,14 +1,26 @@
 <script setup lang="ts">
-defineProps<{
-  current: string
-  patched?: string | null
-}>()
+withDefaults(
+  defineProps<{
+    current: string
+    patched?: string | null
+    tone?: 'danger' | 'neutral'
+  }>(),
+  {
+    patched: null,
+    tone: 'danger',
+  },
+)
 </script>
 
 <template>
   <span class="inline-flex items-center gap-2">
     <code
-      class="rounded-md border border-danger/20 bg-danger/10 px-2 py-0.5 font-mono text-[12px] text-danger"
+      class="rounded-md border px-2 py-0.5 font-mono text-[12px]"
+      :class="
+        tone === 'neutral'
+          ? 'border-border-strong bg-surface-2 text-muted'
+          : 'border-danger/20 bg-danger/10 text-danger'
+      "
     >
       {{ current }}
     </code>
