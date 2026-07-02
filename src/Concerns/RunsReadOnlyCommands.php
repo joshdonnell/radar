@@ -87,11 +87,7 @@ trait RunsReadOnlyCommands
 
     private function commandPath(): string
     {
-        $directories = [];
-
-        if (PHP_BINARY !== '') {
-            $directories[] = dirname(PHP_BINARY);
-        }
+        $directories = [dirname(PHP_BINARY)];
 
         $inheritedPath = getenv('PATH');
 
