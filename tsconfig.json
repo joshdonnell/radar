@@ -13,7 +13,7 @@
         "skipLibCheck": true,
         "noEmit": true,
         "paths": {
-            "@/*": ["./resources/js/*"]
+            "~/*": ["./resources/js/*"]
         },
         "types": ["node", "vite/client"]
     },

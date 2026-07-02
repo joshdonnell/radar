@@ -1,10 +1,10 @@
 export const RadarColor = {
-  Cyan: 'cyan',
-  Rose: 'rose',
-  Amber: 'amber',
-  Emerald: 'emerald',
-  Slate: 'slate',
-  White: 'white',
+  Danger: 'danger',
+  Warning: 'warning',
+  Success: 'success',
+  Abandoned: 'abandoned',
+  Neutral: 'neutral',
+  Fg: 'fg',
 } as const
 
 export type RadarColor = (typeof RadarColor)[keyof typeof RadarColor]
@@ -16,61 +16,48 @@ type ColorClasses = {
 }
 
 const colorClasses: Record<RadarColor, ColorClasses> = {
-  [RadarColor.Cyan]: {
-    bg: 'bg-cyan-500/10',
-    text: 'text-cyan-300',
-    ring: 'ring-cyan-500/15',
+  [RadarColor.Danger]: {
+    bg: 'bg-danger/10',
+    text: 'text-danger',
+    ring: 'ring-danger/25',
   },
-  [RadarColor.Rose]: {
-    bg: 'bg-rose-500/10',
-    text: 'text-rose-300',
-    ring: 'ring-rose-500/15',
+  [RadarColor.Warning]: {
+    bg: 'bg-warning/10',
+    text: 'text-warning',
+    ring: 'ring-warning/25',
   },
-  [RadarColor.Amber]: {
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-300',
-    ring: 'ring-amber-500/15',
+  [RadarColor.Success]: {
+    bg: 'bg-success/10',
+    text: 'text-success',
+    ring: 'ring-success/25',
   },
-  [RadarColor.Emerald]: {
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-300',
-    ring: 'ring-emerald-500/15',
+  [RadarColor.Abandoned]: {
+    bg: 'bg-abandoned/10',
+    text: 'text-abandoned',
+    ring: 'ring-abandoned/25',
   },
-  [RadarColor.Slate]: {
-    bg: 'bg-slate-500/10',
-    text: 'text-slate-400',
-    ring: 'ring-slate-500/15',
+  [RadarColor.Neutral]: {
+    bg: 'bg-surface-2',
+    text: 'text-muted',
+    ring: 'ring-border-strong',
   },
-  [RadarColor.White]: {
-    bg: 'bg-white/[0.04]',
-    text: 'text-white',
-    ring: 'ring-white/[0.08]',
+  [RadarColor.Fg]: {
+    bg: 'bg-fg/[0.04]',
+    text: 'text-fg',
+    ring: 'ring-border',
   },
 }
 
 export function radarColorClasses(
-  color: RadarColor = RadarColor.White,
+  color: RadarColor = RadarColor.Fg,
 ): ColorClasses {
   return colorClasses[color]
 }
 
 export function radarColorClassList(
-  color: RadarColor = RadarColor.White,
+  color: RadarColor = RadarColor.Fg,
 ): string[] {
   const classes = radarColorClasses(color)
 
   return [classes.bg, classes.text, classes.ring]
-}
-
-export function radarFocusRingClass(
-  color: RadarColor = RadarColor.Cyan,
-): string {
-  return {
-    [RadarColor.Cyan]: 'focus-visible:ring-cyan-400/40',
-    [RadarColor.Rose]: 'focus-visible:ring-rose-400/40',
-    [RadarColor.Amber]: 'focus-visible:ring-amber-400/40',
-    [RadarColor.Emerald]: 'focus-visible:ring-emerald-400/40',
-    [RadarColor.Slate]: 'focus-visible:ring-slate-400/40',
-    [RadarColor.White]: 'focus-visible:ring-white/40',
-  }[color]
 }

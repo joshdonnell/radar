@@ -3,6 +3,8 @@ import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite-plus";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import { google } from "laravel-vite-plugin/fonts";
+import laravel from "laravel-vite-plugin";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -33,7 +35,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            "@": resolve(__dirname, "resources/js"),
+            "~": resolve(__dirname, "resources/js"),
         },
     },
     build: {
@@ -53,5 +55,30 @@ export default defineConfig({
             },
         },
     },
-    plugins: [vue(), tailwindcss()],
+    plugins: [
+        vue(),
+        laravel({
+            input: ["resources/css/app.css", "resources/js/app.ts"],
+            refresh: true,
+            fonts: [
+                google("Inter", {
+                    alias: "serif",
+                    weights: [400, 500, 600, 700],
+                    styles: ["normal", "italic"],
+                    subsets: ["latin"],
+                    display: "swap",
+                    preload: [{ weight: 400 }, { weight: 700 }],
+                    fallbacks: ["system-ui", "sans-serif"],
+                }),
+                google("JetBrains Mono", {
+                    alias: "mono",
+                    weights: [400, 500, 600],
+                    subsets: ["latin"],
+                    display: "swap",
+                    fallbacks: ["ui-monospace", "monospace"],
+                }),
+            ],
+        }),
+        tailwindcss(),
+    ],
 });

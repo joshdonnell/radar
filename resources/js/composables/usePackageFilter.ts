@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import type { Ref } from 'vue'
-import type { Scan } from '@/types/scan'
+import type { Scan } from '~/types/scan'
 
 export type PackageRelationFilter = 'all' | 'direct' | 'transitive'
 export type PackageTypeFilter = 'all' | 'production' | 'development' | 'peer'

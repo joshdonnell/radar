@@ -65,6 +65,7 @@ final class NotifyCommand extends Command
             scanId: (string) $scan->id,
             vulnerabilities: $vulnerabilities,
             dashboardUrl: $this->dashboardUrl(),
+            scannedAt: $scan->created_at,
         );
 
         if (! $this->shouldSendVulnerabilityNotification->execute($notification)) {
@@ -147,6 +148,7 @@ final class NotifyCommand extends Command
             patchedVersion: $this->stringValue($vulnerability, 'patched_version'),
             advisoryUrl: $this->stringValue($vulnerability, 'advisory_url'),
             recommendation: $this->stringValue($vulnerability, 'recommendation'),
+            suggestedCommand: $this->stringValue($vulnerability, 'suggested_command'),
         );
     }
 

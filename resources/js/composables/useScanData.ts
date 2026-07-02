@@ -1,7 +1,7 @@
 import { useFetch } from '@vueuse/core'
 import { onMounted, ref } from 'vue'
-import type { RadarConfig } from '@/types/radar'
-import type { Scan } from '@/types/scan'
+import type { RadarConfig } from '~/types/radar'
+import type { Scan } from '~/types/scan'
 
 type LatestScanResponse = {
   scan: Scan | null
