@@ -38,7 +38,12 @@ trait RunsReadOnlyCommands
             return null;
         }
 
-        $process = new Process($command, $basePath, timeout: $this->commandTimeout());
+        $process = new Process(
+            $command,
+            $basePath,
+            $this->commandEnvironment(),
+            timeout: $this->commandTimeout(),
+        );
 
         try {
             $process->run();
@@ -51,6 +56,62 @@ trait RunsReadOnlyCommands
             : $process->getErrorOutput();
 
         return $contents !== '' ? $contents : null;
+    }
+
+    /**
+     * Environment overrides for the subprocess.
+     *
+     * When Radar runs from the web dashboard, the request runs under a web
+     * server (PHP-FPM, Herd, Valet) whose environment usually has a minimal
+     * PATH and may lack HOME. Composer is a PHP script that needs to locate a
+     * `php` binary (and its own home for caching) to resolve the latest package
+     * versions, so a bare PATH makes `composer outdated` fail silently and no
+     * updates are reported. The same command works from the CLI because the
+     * shell environment already exposes these. We rebuild a usable PATH (and a
+     * HOME fallback) so scans behave identically from the UI and the console.
+     *
+     * @return array<string, string>
+     */
+    private function commandEnvironment(): array
+    {
+        $environment = ['PATH' => $this->commandPath()];
+
+        $home = getenv('HOME');
+
+        if (! is_string($home) || $home === '') {
+            $environment['HOME'] = sys_get_temp_dir();
+        }
+
+        return $environment;
+    }
+
+    private function commandPath(): string
+    {
+        $directories = [];
+
+        if (PHP_BINARY !== '') {
+            $directories[] = dirname(PHP_BINARY);
+        }
+
+        $inheritedPath = getenv('PATH');
+
+        if (is_string($inheritedPath) && $inheritedPath !== '') {
+            $directories = [...$directories, ...explode(PATH_SEPARATOR, $inheritedPath)];
+        }
+
+        $directories = [
+            ...$directories,
+            '/usr/local/bin',
+            '/opt/homebrew/bin',
+            '/usr/bin',
+            '/bin',
+        ];
+
+        $directories = array_values(array_unique(
+            array_filter($directories, static fn (string $directory): bool => $directory !== ''),
+        ));
+
+        return implode(PATH_SEPARATOR, $directories);
     }
 
     private function commandTimeout(): int
