@@ -6,7 +6,7 @@ node_modules/
 phpunit.xml
 phpstan.neon
 tmp/
-/workbench
+/workbench/bootstrap/cache
 /public
 
 !tests/Fixtures/**/vendor/

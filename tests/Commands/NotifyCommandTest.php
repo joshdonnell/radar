@@ -87,7 +87,7 @@ it('exits early when scan has no vulnerabilities', function (): void {
 
 it('exits early when no notification routes are configured', function (): void {
     Config::set('radar.notifications.routes.mail', []);
-    Config::set('radar.notifications.routes.slack', null);
+    Config::set('radar.notifications.routes.slack');
 
     vulnerableScan();
 
