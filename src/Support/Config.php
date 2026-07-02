@@ -23,7 +23,17 @@ final class Config
             return 'radar';
         }
 
-        return trim($path, '/');
+        return mb_trim($path, '/');
+    }
+
+    public static function outdatedPenaltyCap(): int
+    {
+        return self::penaltyCap('radar.scoring.outdated_penalty_cap', 30);
+    }
+
+    public static function abandonedPenaltyCap(): int
+    {
+        return self::penaltyCap('radar.scoring.abandoned_penalty_cap', 30);
     }
 
     /**
@@ -44,5 +54,20 @@ final class Config
         }
 
         return $middleware;
+    }
+
+    private static function penaltyCap(string $key, int $default): int
+    {
+        $value = config($key, $default);
+
+        if (is_int($value) || is_string($value)) {
+            $cap = filter_var($value, FILTER_VALIDATE_INT);
+
+            if (is_int($cap) && $cap >= 0) {
+                return $cap;
+            }
+        }
+
+        return $default;
     }
 }

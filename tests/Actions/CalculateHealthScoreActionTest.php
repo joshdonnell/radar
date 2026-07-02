@@ -74,6 +74,32 @@ it('penalizes abandoned packages predictably', function (): void {
     expect($score)->toBe(91);
 });
 
+it('caps the outdated penalty so update debt alone cannot zero the score', function (): void {
+    $outdatedPackages = array_fill(0, 27, outdatedPackage(UpdateType::Major));
+
+    $score = app(CalculateHealthScoreAction::class)->execute(outdatedPackages: $outdatedPackages);
+
+    expect($score)->toBe(70);
+});
+
+it('caps the abandoned penalty', function (): void {
+    $abandonedPackages = array_fill(0, 20, abandonedPackage(isDirect: true));
+
+    $score = app(CalculateHealthScoreAction::class)->execute(abandonedPackages: $abandonedPackages);
+
+    expect($score)->toBe(70);
+});
+
+it('respects the configured outdated penalty cap', function (): void {
+    config()->set('radar.scoring.outdated_penalty_cap', 10);
+
+    $outdatedPackages = array_fill(0, 27, outdatedPackage(UpdateType::Major));
+
+    $score = app(CalculateHealthScoreAction::class)->execute(outdatedPackages: $outdatedPackages);
+
+    expect($score)->toBe(90);
+});
+
 it('never returns less than zero', function (): void {
     $score = app(CalculateHealthScoreAction::class)->execute(vulnerabilities: [
         vulnerability(VulnerabilitySeverity::Critical),

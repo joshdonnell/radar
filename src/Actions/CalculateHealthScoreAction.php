@@ -9,6 +9,7 @@ use JoshDonnell\Radar\Data\OutdatedPackageFindingData;
 use JoshDonnell\Radar\Data\VulnerabilityFindingData;
 use JoshDonnell\Radar\Enums\UpdateType;
 use JoshDonnell\Radar\Enums\VulnerabilitySeverity;
+use JoshDonnell\Radar\Support\Config;
 
 final readonly class CalculateHealthScoreAction
 {
@@ -19,19 +20,27 @@ final readonly class CalculateHealthScoreAction
      */
     public function execute(array $vulnerabilities = [], array $outdatedPackages = [], array $abandonedPackages = []): int
     {
-        $penalty = 0;
+        $vulnerabilityPenalty = 0;
 
         foreach ($vulnerabilities as $vulnerability) {
-            $penalty += $this->vulnerabilityPenalty($vulnerability);
+            $vulnerabilityPenalty += $this->vulnerabilityPenalty($vulnerability);
         }
+
+        $outdatedPenalty = 0;
 
         foreach ($outdatedPackages as $outdatedPackage) {
-            $penalty += $this->outdatedPackagePenalty($outdatedPackage);
+            $outdatedPenalty += $this->outdatedPackagePenalty($outdatedPackage);
         }
 
+        $abandonedPenalty = 0;
+
         foreach ($abandonedPackages as $abandonedPackage) {
-            $penalty += $this->abandonedPackagePenalty($abandonedPackage);
+            $abandonedPenalty += $this->abandonedPackagePenalty($abandonedPackage);
         }
+
+        $penalty = $vulnerabilityPenalty
+            + min($outdatedPenalty, Config::outdatedPenaltyCap())
+            + min($abandonedPenalty, Config::abandonedPenaltyCap());
 
         return max(0, 100 - $penalty);
     }

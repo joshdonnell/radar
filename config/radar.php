@@ -112,6 +112,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Health Score
+    |--------------------------------------------------------------------------
+    |
+    | The health score starts at 100 and subtracts a penalty for each finding.
+    | Vulnerabilities are uncapped and may take the score to zero. Outdated and
+    | abandoned packages are maintenance signals, so their combined penalty is
+    | capped by the values below to keep update debt from dominating the score.
+    |
+    */
+
+    'scoring' => [
+        'outdated_penalty_cap' => env('RADAR_SCORING_OUTDATED_PENALTY_CAP', 30),
+        'abandoned_penalty_cap' => env('RADAR_SCORING_ABANDONED_PENALTY_CAP', 30),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Notifications
     |--------------------------------------------------------------------------
     |
