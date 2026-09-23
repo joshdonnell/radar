@@ -156,7 +156,7 @@ final readonly class DetectNpmVulnerabilitiesAction
         $vulnerabilities = [];
 
         foreach (explode("\n", $output) as $line) {
-            $line = trim($line);
+            $line = mb_trim($line);
 
             if ($line === '') {
                 continue;
