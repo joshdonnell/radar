@@ -52,12 +52,12 @@
     "src": "node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-vietnamese-wght-normal.woff2"
   },
   "resources/js/app.ts": {
-    "file": "assets/app-BPXoDmiP.js",
+    "file": "assets/app-CIZmJZrY.js",
     "name": "app",
     "src": "resources/js/app.ts",
     "isEntry": true,
     "css": [
-      "assets/app-DusTZw_U.css"
+      "assets/app-CPX6ANpT.css"
     ],
     "assets": [
       "assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2",
