@@ -6,25 +6,21 @@ namespace JoshDonnell\Radar\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
-use JoshDonnell\Radar\Actions\ShouldSendVulnerabilityNotificationAction;
-use JoshDonnell\Radar\Concerns\ReadsJsonFiles;
+use JoshDonnell\Radar\Actions\TrackNotifiedVulnerabilitiesAction;
 use JoshDonnell\Radar\Data\VulnerabilityFindingData;
 use JoshDonnell\Radar\Data\VulnerabilityNotificationData;
-use JoshDonnell\Radar\Enums\Ecosystem;
-use JoshDonnell\Radar\Enums\VulnerabilitySeverity;
 use JoshDonnell\Radar\Models\RadarScan;
 use JoshDonnell\Radar\Notifications\VulnerabilitiesFound;
+use JoshDonnell\Radar\Support\Config;
 
 final class NotifyCommand extends Command
 {
-    use ReadsJsonFiles;
-
     public $signature = 'radar:notify {--scan : Run radar:scan before sending notifications}';
 
-    public $description = 'Send notifications for vulnerabilities found in the latest Radar scan';
+    public $description = 'Send notifications for new vulnerabilities found in the latest Radar scan';
 
     public function __construct(
-        private readonly ShouldSendVulnerabilityNotificationAction $shouldSendVulnerabilityNotification,
+        private readonly TrackNotifiedVulnerabilitiesAction $trackNotifiedVulnerabilities,
     ) {
         parent::__construct();
     }
@@ -47,9 +43,11 @@ final class NotifyCommand extends Command
             return self::SUCCESS;
         }
 
-        $vulnerabilities = $this->vulnerabilities($scan);
+        $vulnerabilities = $this->eligibleVulnerabilities($scan);
 
         if ($vulnerabilities === []) {
+            $this->trackNotifiedVulnerabilities->record(current: [], sent: []);
+
             $this->components->info('No vulnerabilities to notify about.');
 
             return self::SUCCESS;
@@ -61,37 +59,53 @@ final class NotifyCommand extends Command
             return self::SUCCESS;
         }
 
-        $notification = new VulnerabilityNotificationData(
-            scanId: (string) $scan->id,
-            vulnerabilities: $vulnerabilities,
-            dashboardUrl: $this->dashboardUrl(),
-            scannedAt: $scan->created_at,
-        );
+        $pendingVulnerabilities = $this->trackNotifiedVulnerabilities->pending($vulnerabilities);
 
-        if (! $this->shouldSendVulnerabilityNotification->execute($notification)) {
-            $this->components->info('Vulnerability notification already sent for this finding set.');
+        if ($pendingVulnerabilities === []) {
+            $this->trackNotifiedVulnerabilities->record(current: $vulnerabilities, sent: []);
+
+            $this->components->info('No new vulnerabilities to notify about.');
 
             return self::SUCCESS;
         }
 
-        $mailRecipients = $this->mailRecipients();
-        $slackWebhookUrl = $this->slackWebhookUrl();
+        $mailRecipients = Config::notificationMailRecipients();
+        $slackWebhookUrl = Config::notificationSlackWebhookUrl();
 
-        $this->sendNotification($notification, $mailRecipients, $slackWebhookUrl);
-        $this->shouldSendVulnerabilityNotification->markAsSent($notification);
+        $this->sendNotification(
+            notification: new VulnerabilityNotificationData(
+                scanId: $scan->id,
+                vulnerabilities: $pendingVulnerabilities,
+                dashboardUrl: $this->dashboardUrl(),
+                scannedAt: $scan->created_at,
+            ),
+            mailRecipients: $mailRecipients,
+            slackWebhookUrl: $slackWebhookUrl,
+        );
+
+        $this->trackNotifiedVulnerabilities->record(current: $vulnerabilities, sent: $pendingVulnerabilities);
 
         $this->components->info(sprintf(
-            'Sent vulnerability notification for %d finding(s) via %s.',
-            count($vulnerabilities),
+            'Sent vulnerability notification for %d new finding(s) via %s.',
+            count($pendingVulnerabilities),
             implode(', ', $this->targetedChannels($mailRecipients, $slackWebhookUrl)),
         ));
 
         return self::SUCCESS;
     }
 
-    /**
-     * @param  list<string>  $mailRecipients
-     */
+    /** @return list<VulnerabilityFindingData> */
+    private function eligibleVulnerabilities(RadarScan $scan): array
+    {
+        $minimumSeverity = Config::notificationMinimumSeverity();
+
+        return array_values(array_filter(
+            $scan->vulnerabilities(),
+            static fn (VulnerabilityFindingData $vulnerability): bool => $vulnerability->severity->meetsNotificationThreshold($minimumSeverity),
+        ));
+    }
+
+    /** @param list<string> $mailRecipients */
     private function sendNotification(
         VulnerabilityNotificationData $notification,
         array $mailRecipients,
@@ -109,67 +123,22 @@ final class NotifyCommand extends Command
         ));
     }
 
-    /** @return list<VulnerabilityFindingData> */
-    private function vulnerabilities(RadarScan $scan): array
-    {
-        $vulnerabilities = $scan->payload['vulnerabilities'] ?? [];
-
-        if (! is_array($vulnerabilities)) {
-            return [];
-        }
-
-        $findings = [];
-
-        foreach ($vulnerabilities as $vulnerability) {
-            if (! is_array($vulnerability)) {
-                continue;
-            }
-
-            /** @var array<string, mixed> $vulnerability */
-            $findings[] = $this->vulnerabilityFinding($vulnerability);
-        }
-
-        return $findings;
-    }
-
-    /** @param array<string, mixed> $vulnerability */
-    private function vulnerabilityFinding(array $vulnerability): VulnerabilityFindingData
-    {
-        return new VulnerabilityFindingData(
-            id: $this->stringValue($vulnerability, 'id') ?? 'unknown-advisory',
-            ecosystem: Ecosystem::tryFrom($this->stringValue($vulnerability, 'ecosystem') ?? '') ?? Ecosystem::Composer,
-            packageName: $this->stringValue($vulnerability, 'package_name') ?? 'unknown/package',
-            installedVersion: $this->stringValue($vulnerability, 'installed_version') ?? 'unknown',
-            severity: VulnerabilitySeverity::tryFrom($this->stringValue($vulnerability, 'severity') ?? '') ?? VulnerabilitySeverity::Unknown,
-            advisoryId: $this->stringValue($vulnerability, 'advisory_id') ?? 'unknown-advisory',
-            isDirect: ($vulnerability['is_direct'] ?? false) === true,
-            cve: $this->stringValue($vulnerability, 'cve'),
-            affectedVersions: $this->stringValue($vulnerability, 'affected_versions'),
-            patchedVersion: $this->stringValue($vulnerability, 'patched_version'),
-            advisoryUrl: $this->stringValue($vulnerability, 'advisory_url'),
-            recommendation: $this->stringValue($vulnerability, 'recommendation'),
-            suggestedCommand: $this->stringValue($vulnerability, 'suggested_command'),
-        );
-    }
-
     private function dashboardUrl(): ?string
     {
         if (config('radar.dashboard.enabled') !== true) {
             return null;
         }
 
-        $path = config('radar.path', 'radar');
-
-        return url(is_string($path) ? $path : 'radar');
+        return url(Config::path());
     }
 
     private function hasNotificationChannel(): bool
     {
-        if ($this->mailRecipients() !== []) {
+        if (Config::notificationMailRecipients() !== []) {
             return true;
         }
 
-        return $this->slackWebhookUrl() !== null;
+        return Config::notificationSlackWebhookUrl() !== null;
     }
 
     /**
@@ -189,24 +158,5 @@ final class NotifyCommand extends Command
         }
 
         return $channels;
-    }
-
-    /** @return list<string> */
-    private function mailRecipients(): array
-    {
-        $recipients = config('radar.notifications.routes.mail', []);
-
-        if (! is_array($recipients)) {
-            return [];
-        }
-
-        return array_values(array_filter($recipients, is_string(...)));
-    }
-
-    private function slackWebhookUrl(): ?string
-    {
-        $webhookUrl = config('radar.notifications.routes.slack');
-
-        return is_string($webhookUrl) && $webhookUrl !== '' ? $webhookUrl : null;
     }
 }

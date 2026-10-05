@@ -1,26 +1,18 @@
 import type { PackageRecord } from '~/types/scan'
+import { ecosystemLabel } from '~/utils/dashboard'
 
 export type PackageBreakdownRow = {
   label: string
   value: number
 }
 
-const ecosystemLabels: Record<string, string> = {
-  composer: 'Composer',
-  npm: 'Node',
-}
-
-function ecosystemLabel(ecosystem: string): string {
-  return (
-    ecosystemLabels[ecosystem] ??
-    ecosystem.charAt(0).toUpperCase() + ecosystem.slice(1)
-  )
-}
-
 export function buildPackageBreakdown(
   packages: PackageRecord[],
 ): PackageBreakdownRow[] {
-  const groups = new Map<string, { direct: number; transitive: number }>()
+  const groups = new Map<
+    PackageRecord['ecosystem'],
+    { direct: number; transitive: number }
+  >()
 
   for (const pkg of packages) {
     const group = groups.get(pkg.ecosystem) ?? { direct: 0, transitive: 0 }

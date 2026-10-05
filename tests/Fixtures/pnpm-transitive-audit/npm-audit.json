@@ -1,0 +1,15 @@
+{
+    "advisories": {
+        "1100": {
+            "id": 1100,
+            "module_name": "esbuild",
+            "title": "Fixture esbuild advisory",
+            "severity": "moderate",
+            "vulnerable_versions": "<0.25.0",
+            "url": "https://github.com/advisories/GHSA-esbuild-fixture",
+            "findings": [
+                { "version": "0.24.2", "paths": ["vite>esbuild"] }
+            ]
+        }
+    }
+}

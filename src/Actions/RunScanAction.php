@@ -7,6 +7,7 @@ namespace JoshDonnell\Radar\Actions;
 use JoshDonnell\Radar\Data\AbandonedPackageFindingData;
 use JoshDonnell\Radar\Data\OutdatedPackageFindingData;
 use JoshDonnell\Radar\Data\PackageData;
+use JoshDonnell\Radar\Data\ScanWarningData;
 use JoshDonnell\Radar\Data\VulnerabilityFindingData;
 use JoshDonnell\Radar\Models\RadarScan;
 
@@ -40,6 +41,10 @@ final readonly class RunScanAction
             'abandoned' => array_map(
                 static fn (AbandonedPackageFindingData $finding): array => $finding->toArray(),
                 $dependencyScan->abandoned,
+            ),
+            'warnings' => array_map(
+                static fn (ScanWarningData $warning): array => $warning->toArray(),
+                $dependencyScan->warnings,
             ),
         ];
 

@@ -11,7 +11,7 @@ beforeEach(function (): void {
 });
 
 it('detects composer vulnerabilities', function (): void {
-    $findings = app(DetectComposerVulnerabilitiesAction::class)->execute($this->basepath, $this->packages);
+    $findings = app(DetectComposerVulnerabilitiesAction::class)->execute($this->basepath, $this->packages)->findings;
 
     expect($findings)->toHaveCount(2);
 
@@ -22,6 +22,7 @@ it('detects composer vulnerabilities', function (): void {
         'installed_version' => '12.57.0',
         'severity' => 'high',
         'advisory_id' => 'PKSA-laravel-framework-fixture',
+        'title' => 'Fixture Laravel advisory',
         'cve' => 'CVE-2026-1001',
         'affected_versions' => '<12.57.1',
         'patched_version' => null,
@@ -29,6 +30,7 @@ it('detects composer vulnerabilities', function (): void {
         'is_direct' => true,
         'recommendation' => 'Review the advisory before updating.',
         'suggested_command' => 'composer update laravel/framework --with-dependencies',
+        'alternative_commands' => [],
         'required_by' => [],
     ]);
 
@@ -36,16 +38,22 @@ it('detects composer vulnerabilities', function (): void {
         'package_name' => 'symfony/console',
         'severity' => 'medium',
         'is_direct' => false,
-        'recommendation' => 'Review which direct dependency requires symfony/console before updating. Prefer updating the parent package rather than editing the lock file manually.',
-        'suggested_command' => null,
+        'recommendation' => 'symfony/console is a transitive dependency. Try the suggested command first, and if it cannot reach a patched version, update the package that requires it rather than editing the lock file manually.',
+        'suggested_command' => 'composer update symfony/console',
     ]);
 });
 
 it('returns an empty list when composer audit output is missing', function (): void {
-    $findings = app(DetectComposerVulnerabilitiesAction::class)->execute(
+    $result = app(DetectComposerVulnerabilitiesAction::class)->execute(
         __DIR__.'/../Fixtures/missing-project',
         [],
     );
 
-    expect($findings)->toBe([]);
+    expect($result->findings)->toBe([])
+        ->and($result->warnings)->toHaveCount(1)
+        ->and($result->warnings[0]->toArray())->toMatchArray([
+            'ecosystem' => 'composer',
+            'check' => 'vulnerabilities',
+        ])
+        ->and($result->warnings[0]->message)->toContain('`composer audit --format=json` could not be run');
 });

@@ -40,7 +40,7 @@
                                     <td style="padding-left:11px;font-size:15px;font-weight:600;color:#18181b;">Laravel Radar</td>
                                 </tr>
                             </table>
-                            <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#18181b;">{{ $total }} {{ $pluralizedVulnerability }} detected</h1>
+                            <h1 style="margin:0 0 10px;font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#18181b;">{{ $total }} new {{ $pluralizedVulnerability }} detected</h1>
                             <p style="margin:0;color:#52525b;font-size:14.5px;line-height:1.55;">A scan of your project dependencies has identified packages requiring attention.</p>
                         </td>
                     </tr>
@@ -88,6 +88,10 @@
                                             </td>
                                         </tr>
                                     </table>
+
+                                    @if ($vulnerability->title)
+                                        <div style="font-size:13.5px;color:#3f3f46;line-height:1.5;margin-top:12px;">{{ $vulnerability->title }}</div>
+                                    @endif
 
                                     @if ($vulnerability->cve)
                                         <div style="font-family:{{ $mono }};font-size:12px;color:#71717a;margin-top:12px;">{{ $vulnerability->cve }}</div>

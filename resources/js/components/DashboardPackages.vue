@@ -1,22 +1,38 @@
 <script setup lang="ts">
+import { onKeyStroke } from '@vueuse/core'
+import { computed, useTemplateRef } from 'vue'
 import RadarBadge from '~/components/RadarBadge.vue'
+import RadarSegmentedControl from '~/components/RadarSegmentedControl.vue'
 import type {
+  PackageEcosystemFilter,
   PackageRelationFilter,
+  PackageSortKey,
+  PackageStatus,
   PackageTypeFilter,
 } from '~/composables/usePackageFilter'
 import { useRadarDashboard } from '~/composables/useRadarDashboard'
+import { ecosystemLabel, packageUrl } from '~/utils/dashboard'
 
 const {
   packageSearch,
   packageRelationFilter,
   packageTypeFilter,
+  packageEcosystemFilter,
+  ecosystems,
+  sortKey,
+  sortDirection,
+  sortBy,
+  statusesFor,
   showAllPackages,
   clearSearch,
   filteredPackages,
   visiblePackages,
   hasMorePackages,
+  hasActiveFilters,
   togglePackages,
 } = useRadarDashboard()
+
+const searchInput = useTemplateRef<HTMLInputElement>('searchInput')
 
 const relationFilters: { label: string; value: PackageRelationFilter }[] = [
   { label: 'All', value: 'all' },
@@ -30,6 +46,52 @@ const typeFilters: { label: string; value: PackageTypeFilter }[] = [
   { label: 'Development', value: 'development' },
   { label: 'Peer', value: 'peer' },
 ]
+
+const ecosystemFilters = computed<
+  { label: string; value: PackageEcosystemFilter }[]
+>(() => [
+  { label: 'All sources', value: 'all' },
+  ...ecosystems.value.map((ecosystem) => ({
+    label: ecosystemLabel(ecosystem),
+    value: ecosystem,
+  })),
+])
+
+const columns: { key: PackageSortKey; label: string }[] = [
+  { key: 'name', label: 'Package' },
+  { key: 'version', label: 'Version' },
+  { key: 'type', label: 'Type' },
+  { key: 'status', label: 'Status' },
+]
+
+const statusBadges: Record<PackageStatus, string> = {
+  vulnerable: 'bg-danger/10 text-danger ring-danger/25',
+  abandoned: 'bg-abandoned/10 text-abandoned ring-abandoned/25',
+  outdated: 'bg-warning/10 text-warning ring-warning/25',
+}
+
+const visibleParentCount = 1
+
+const ariaSort = (key: PackageSortKey) => {
+  if (sortKey.value !== key) return 'none'
+
+  return sortDirection.value === 'asc' ? 'ascending' : 'descending'
+}
+
+onKeyStroke('/', (event) => {
+  const target = event.target
+
+  if (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    (target instanceof HTMLElement && target.isContentEditable)
+  ) {
+    return
+  }
+
+  event.preventDefault()
+  searchInput.value?.focus()
+})
 </script>
 
 <template>
@@ -66,7 +128,7 @@ const typeFilters: { label: string; value: PackageTypeFilter }[] = [
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <div class="relative">
+        <div class="relative w-full sm:w-auto">
           <svg
             class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dim"
             viewBox="0 0 24 24"
@@ -78,10 +140,14 @@ const typeFilters: { label: string; value: PackageTypeFilter }[] = [
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
+            ref="searchInput"
             v-model="packageSearch"
-            type="text"
+            type="search"
             placeholder="Search packages..."
-            class="h-8 w-full rounded-lg border border-border bg-inset py-1 pl-8 pr-8 text-[12px] text-fg placeholder-dim transition-colors hover:border-border-strong focus:border-border-strong focus:outline-none sm:w-52"
+            aria-label="Search packages"
+            aria-keyshortcuts="/"
+            class="h-8 w-full rounded-lg border border-border bg-inset py-1 pl-8 pr-8 text-[12px] text-fg placeholder-dim transition-colors hover:border-border-strong focus:border-border-strong focus:outline-none sm:w-56 [&::-webkit-search-cancel-button]:hidden"
+            @keydown.escape="clearSearch"
           />
           <button
             v-if="packageSearch"
@@ -101,55 +167,40 @@ const typeFilters: { label: string; value: PackageTypeFilter }[] = [
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
+          <kbd
+            v-else
+            class="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded border border-border-strong px-1.5 font-mono text-[10px] text-dim sm:block"
+            aria-hidden="true"
+          >
+            /
+          </kbd>
         </div>
-        <RadarBadge color="neutral" size="md">
+        <RadarBadge color="neutral" size="md" class="shrink-0">
           {{ filteredPackages.length }} packages
         </RadarBadge>
       </div>
     </div>
 
     <div
-      class="flex flex-col gap-2 border-b border-border px-5 py-3 sm:flex-row sm:items-center sm:justify-between"
+      class="flex flex-col gap-2 border-b border-border px-5 py-3 lg:flex-row lg:flex-wrap lg:items-center"
     >
-      <div
-        class="inline-flex w-full flex-wrap gap-1 rounded-lg bg-surface-2/60 p-1 ring-1 ring-inset ring-border sm:w-auto"
-      >
-        <button
-          v-for="filter in relationFilters"
-          :key="filter.value"
-          type="button"
-          class="h-7 cursor-pointer rounded-md px-2.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/20"
-          :class="
-            packageRelationFilter === filter.value
-              ? 'bg-fg/10 text-fg ring-1 ring-inset ring-border-strong'
-              : 'text-muted hover:text-fg'
-          "
-          :aria-pressed="packageRelationFilter === filter.value"
-          @click="packageRelationFilter = filter.value"
-        >
-          {{ filter.label }}
-        </button>
-      </div>
-
-      <div
-        class="inline-flex w-full flex-wrap gap-1 rounded-lg bg-surface-2/60 p-1 ring-1 ring-inset ring-border sm:w-auto"
-      >
-        <button
-          v-for="filter in typeFilters"
-          :key="filter.value"
-          type="button"
-          class="h-7 cursor-pointer rounded-md px-2.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/20"
-          :class="
-            packageTypeFilter === filter.value
-              ? 'bg-fg/10 text-fg ring-1 ring-inset ring-border-strong'
-              : 'text-muted hover:text-fg'
-          "
-          :aria-pressed="packageTypeFilter === filter.value"
-          @click="packageTypeFilter = filter.value"
-        >
-          {{ filter.label }}
-        </button>
-      </div>
+      <RadarSegmentedControl
+        v-if="ecosystems.length > 1"
+        v-model="packageEcosystemFilter"
+        label="Filter by package manager"
+        :options="ecosystemFilters"
+      />
+      <RadarSegmentedControl
+        v-model="packageRelationFilter"
+        label="Filter by relation"
+        :options="relationFilters"
+      />
+      <RadarSegmentedControl
+        v-model="packageTypeFilter"
+        label="Filter by dependency type"
+        :options="typeFilters"
+        class="lg:ml-auto"
+      />
     </div>
 
     <div v-if="filteredPackages.length" class="overflow-x-auto">
@@ -158,9 +209,37 @@ const typeFilters: { label: string; value: PackageTypeFilter }[] = [
           class="bg-surface-2/40 text-[10px] font-semibold uppercase tracking-wider text-dim"
         >
           <tr>
-            <th class="px-5 py-2.5">Package</th>
-            <th class="px-5 py-2.5">Version</th>
-            <th class="px-5 py-2.5">Type</th>
+            <th
+              v-for="column in columns"
+              :key="column.key"
+              class="px-5 py-2"
+              :aria-sort="ariaSort(column.key)"
+            >
+              <button
+                type="button"
+                class="-mx-1 inline-flex cursor-pointer items-center gap-1 rounded px-1 py-0.5 uppercase tracking-wider transition-colors hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/20"
+                :class="{ 'text-fg': sortKey === column.key }"
+                @click="sortBy(column.key)"
+              >
+                {{ column.label }}
+                <svg
+                  class="h-2.5 w-2.5 transition-transform"
+                  :class="[
+                    sortKey === column.key ? 'opacity-100' : 'opacity-0',
+                    sortKey === column.key && sortDirection === 'desc'
+                      ? 'rotate-180'
+                      : '',
+                  ]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  aria-hidden="true"
+                >
+                  <polyline points="6 15 12 9 18 15" />
+                </svg>
+              </button>
+            </th>
             <th class="px-5 py-2.5">Required by</th>
           </tr>
         </thead>
@@ -172,14 +251,25 @@ const typeFilters: { label: string; value: PackageTypeFilter }[] = [
           >
             <td class="px-5 py-2.5">
               <div class="flex items-center gap-2">
-                <span class="font-mono font-medium text-fg/90">{{
-                  pkg.name
-                }}</span>
+                <a
+                  :href="packageUrl(pkg)"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="rounded font-mono font-medium text-fg/90 underline-offset-2 hover:text-fg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/20"
+                >
+                  {{ pkg.name }}
+                </a>
                 <span
                   v-if="pkg.is_direct"
-                  class="rounded bg-success/10 px-1.5 py-px text-[9px] font-bold uppercase tracking-wider text-success ring-1 ring-inset ring-success/25"
+                  class="rounded bg-surface-2 px-1.5 py-px text-[9px] font-bold uppercase tracking-wider text-muted ring-1 ring-inset ring-border-strong"
                 >
                   Direct
+                </span>
+                <span
+                  v-if="ecosystems.length > 1"
+                  class="text-[10px] font-medium text-dim"
+                >
+                  {{ ecosystemLabel(pkg.ecosystem) }}
                 </span>
               </div>
             </td>
@@ -193,8 +283,33 @@ const typeFilters: { label: string; value: PackageTypeFilter }[] = [
             <td class="px-5 py-2.5 text-muted">
               {{ pkg.dependency_type }}
             </td>
-            <td class="px-5 py-2.5 text-[11px] text-dim">
-              {{ pkg.required_by?.length ? pkg.required_by.join(', ') : '—' }}
+            <td class="px-5 py-2.5">
+              <div class="flex flex-wrap gap-1">
+                <span
+                  v-for="status in statusesFor(pkg)"
+                  :key="status"
+                  class="rounded px-1.5 py-px text-[9px] font-bold uppercase tracking-wider ring-1 ring-inset"
+                  :class="statusBadges[status]"
+                >
+                  {{ status }}
+                </span>
+                <span v-if="!statusesFor(pkg).length" class="text-dim">—</span>
+              </div>
+            </td>
+            <td
+              class="px-5 py-2.5 text-[11px] text-dim"
+              :title="pkg.required_by.join(', ') || undefined"
+            >
+              <template v-if="pkg.required_by.length">
+                {{ pkg.required_by.slice(0, visibleParentCount).join(', ') }}
+                <span
+                  v-if="pkg.required_by.length > visibleParentCount"
+                  class="ml-1 rounded bg-surface-2 px-1 font-medium text-muted"
+                >
+                  +{{ pkg.required_by.length - visibleParentCount }}
+                </span>
+              </template>
+              <template v-else>—</template>
             </td>
           </tr>
         </tbody>
@@ -247,15 +362,12 @@ const typeFilters: { label: string; value: PackageTypeFilter }[] = [
         </svg>
       </div>
       <p class="mt-2.5 text-xs text-muted">
-        <span v-if="packageSearch"
-          >No packages match "{{ packageSearch }}".</span
-        >
-        <span
-          v-else-if="
-            packageRelationFilter !== 'all' || packageTypeFilter !== 'all'
-          "
-          >No packages match the selected filters.</span
-        >
+        <span v-if="packageSearch">
+          No packages match "{{ packageSearch }}".
+        </span>
+        <span v-else-if="hasActiveFilters">
+          No packages match the selected filters.
+        </span>
         <span v-else>No packages recorded in this scan.</span>
       </p>
       <button

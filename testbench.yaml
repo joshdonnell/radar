@@ -1,3 +1,6 @@
+env:
+  - QUEUE_CONNECTION=sync
+
 providers:
   - JoshDonnell\Radar\RadarServiceProvider
   - Workbench\App\Providers\WorkbenchServiceProvider

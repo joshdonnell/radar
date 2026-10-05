@@ -38,7 +38,7 @@ it('builds a styled mail notification', function (): void {
     $mail = vulnerabilitiesFound(channels: ['mail'])->toMail(new AnonymousNotifiable());
 
     expect($mail)
-        ->subject->toBe('[Radar] 2 vulnerabilities detected')
+        ->subject->toBe('[Radar] 2 new vulnerabilities detected')
         ->view->toBe([
             'html' => 'radar::emails.vulnerabilities-found',
             'text' => 'radar::emails.vulnerabilities-found-text',
@@ -70,7 +70,7 @@ it('builds a useful slack notification', function (): void {
 
     expect($slack)
         ->level->toBe('warning')
-        ->content->toContain('2 vulnerabilities detected')
+        ->content->toContain('2 new vulnerabilities detected')
         ->and($attachment)
         ->not->toBeNull()
         ->title->toBe('Scan Details')
@@ -99,7 +99,7 @@ it('includes the scan date in the mail subject when available', function (): voi
         channels: ['mail'],
     ))->toMail(new AnonymousNotifiable());
 
-    expect($mail->subject)->toBe('[Radar] 1 vulnerability detected (Jul 2, 2026)');
+    expect($mail->subject)->toBe('[Radar] 1 new vulnerability detected (Jul 2, 2026)');
 });
 
 /** @param list<'mail'|'slack'> $channels */

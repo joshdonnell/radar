@@ -129,6 +129,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Queue
+    |--------------------------------------------------------------------------
+    |
+    | Scans started from the dashboard run as a queued job, because a scan can
+    | take longer than a web request is allowed to. Leave these empty to use
+    | your application's default queue connection and queue.
+    |
+    */
+
+    'queue' => [
+        'connection' => env('RADAR_QUEUE_CONNECTION'),
+        'name' => env('RADAR_QUEUE'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Notifications
     |--------------------------------------------------------------------------
     |
@@ -136,10 +152,17 @@ return [
     | Radar registers a scheduled nightly `radar:notify --scan` run. Make sure
     | your application has Laravel's scheduler running in production.
     |
+    | Each vulnerability is announced once. Set `remind_after` to a number of
+    | seconds to be reminded about vulnerabilities that are still unresolved.
+    | Findings below `min_severity` (low, medium, high or critical) are never
+    | sent.
+    |
     */
 
     'notifications' => [
-        'dedupe_ttl' => env('RADAR_NOTIFICATION_DEDUPE_TTL', 86400),
+        'min_severity' => env('RADAR_NOTIFICATION_MIN_SEVERITY', 'low'),
+
+        'remind_after' => env('RADAR_NOTIFICATION_REMIND_AFTER'),
 
         'schedule' => [
             'enabled' => env('RADAR_NOTIFICATION_SCHEDULE_ENABLED', true),
@@ -148,7 +171,10 @@ return [
         ],
 
         'routes' => [
-            'mail' => array_values(array_filter(explode(',', (string) env('RADAR_NOTIFICATION_MAIL_TO', '')))),
+            'mail' => array_values(array_filter(array_map(
+                trim(...),
+                explode(',', (string) env('RADAR_NOTIFICATION_MAIL_TO', '')),
+            ))),
             'slack' => env('RADAR_NOTIFICATION_SLACK_WEBHOOK_URL'),
         ],
     ],

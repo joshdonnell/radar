@@ -16,7 +16,8 @@ it('schedules notification scans every night', function (): void {
     expect($event)
         ->not->toBeNull()
         ->expression->toBe('0 2 * * *')
-        ->withoutOverlapping->toBeTrue();
+        ->withoutOverlapping->toBeTrue()
+        ->onOneServer->toBeTrue();
 });
 
 it('does not schedule notification scans when disabled', function (): void {

@@ -34,3 +34,33 @@
   --radius-2xl: 10px;
   --radius-pill: 9999px;
 }
+
+:root {
+  color-scheme: dark;
+}
+
+/*
+ * Light theme. The semantic accents are darker than their dark-theme
+ * counterparts so small text keeps at least 4.5:1 contrast on white.
+ */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --color-bg: #f6f6f7;
+    --color-surface: #ffffff;
+    --color-surface-2: #f1f1f3;
+    --color-inset: #f8f8f9;
+    --color-border: #e6e6e9;
+    --color-border-strong: #d9d9de;
+
+    --color-fg: #18181b;
+    --color-muted: #5f5f67;
+    --color-dim: #73737b;
+
+    --color-danger: #c42b2b;
+    --color-warning: #94600a;
+    --color-success: #1b7a47;
+    --color-abandoned: #8638ab;
+  }
+}

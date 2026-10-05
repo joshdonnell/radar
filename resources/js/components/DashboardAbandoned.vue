@@ -19,7 +19,7 @@ defineProps<{
       title="Abandoned packages"
       subtitle="Composer packages marked as abandoned in the lock file."
       :count="abandonedPackages.length + ' abandoned'"
-      count-color="abandoned"
+      :count-color="abandonedPackages.length ? 'abandoned' : 'neutral'"
     >
       <template #icon>
         <svg

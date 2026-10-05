@@ -5,18 +5,16 @@ declare(strict_types=1);
 use JoshDonnell\Radar\Data\RadarScanData;
 use JoshDonnell\Radar\Models\RadarScan;
 
-it('can be created from radar scan data', function (): void {
-    $finding = new RadarScanData(
-        id: '4fd47b79-7fa1-4615-bfaa-28a3f8d3fdbe',
-        score: 50,
-        package_count: 100,
-        vulnerability_count: 10,
-        payload: [],
-        created_at: null,
-    );
+it('serialises an empty scan', function (): void {
+    $model = RadarScan::factory()->create([
+        'score' => 50,
+        'package_count' => 100,
+        'vulnerability_count' => 10,
+        'payload' => [],
+    ]);
 
-    expect($finding->toArray())->toBe([
-        'id' => '4fd47b79-7fa1-4615-bfaa-28a3f8d3fdbe',
+    expect(RadarScanData::fromModel($model)->toArray())->toBe([
+        'id' => $model->id,
         'score' => 50,
         'package_count' => 100,
         'vulnerability_count' => 10,
@@ -24,27 +22,52 @@ it('can be created from radar scan data', function (): void {
         'vulnerabilities' => [],
         'outdated' => [],
         'abandoned' => [],
-        'created_at' => null,
-        'created_at_human' => null,
+        'warnings' => [],
+        'created_at' => $model->created_at?->toIso8601String(),
     ]);
 });
 
-it('can be created from a RadarScan model', function (): void {
-    $model = RadarScan::factory()->create();
+it('normalises stored findings through their data objects', function (): void {
+    $model = RadarScan::factory()->create([
+        'payload' => [
+            'packages' => [
+                ['name' => 'laravel/framework', 'ecosystem' => 'composer', 'installed_version' => '12.0.0', 'is_direct' => true],
+                'not-a-record',
+            ],
+            'vulnerabilities' => [
+                ['package_name' => 'laravel/framework', 'severity' => 'critical', 'title' => 'Remote code execution'],
+            ],
+            'outdated' => [
+                ['package_name' => 'vite', 'ecosystem' => 'npm', 'update_type' => 'not-a-type'],
+            ],
+            'abandoned' => [
+                ['package_name' => 'swiftmailer/swiftmailer'],
+            ],
+            'warnings' => [
+                ['ecosystem' => 'npm', 'check' => 'outdated', 'message' => 'Radar cannot check Bun projects for outdated packages yet.'],
+            ],
+        ],
+    ]);
 
-    $data = RadarScanData::fromModel($model);
+    $data = RadarScanData::fromModel($model)->toArray();
 
-    expect($data)->toBeInstanceOf(RadarScanData::class)
-        ->and($data->toArray())->toBe([
-            'id' => $model->id,
-            'score' => $model->score,
-            'package_count' => $model->package_count,
-            'vulnerability_count' => $model->vulnerability_count,
-            'packages' => $model->payload['packages'] ?? [],
-            'vulnerabilities' => $model->payload['vulnerabilities'] ?? [],
-            'outdated' => $model->payload['outdated'] ?? [],
-            'abandoned' => $model->payload['abandoned'] ?? [],
-            'created_at' => $model->created_at?->toIso8601String(),
-            'created_at_human' => $model->created_at?->diffForHumans(),
+    expect($data['packages'])->toHaveCount(1)
+        ->and($data['packages'][0])->toMatchArray([
+            'name' => 'laravel/framework',
+            'is_direct' => true,
+            'dependency_type' => 'production',
+        ])
+        ->and($data['vulnerabilities'][0])->toMatchArray([
+            'severity' => 'critical',
+            'title' => 'Remote code execution',
+            'alternative_commands' => [],
+        ])
+        ->and($data['outdated'][0])->toMatchArray([
+            'ecosystem' => 'npm',
+            'update_type' => 'unknown',
+        ])
+        ->and($data['abandoned'][0]['package_name'])->toBe('swiftmailer/swiftmailer')
+        ->and($data['warnings'])->toBe([
+            ['ecosystem' => 'npm', 'check' => 'outdated', 'message' => 'Radar cannot check Bun projects for outdated packages yet.'],
         ]);
 });

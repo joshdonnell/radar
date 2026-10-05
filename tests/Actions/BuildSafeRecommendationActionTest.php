@@ -15,20 +15,27 @@ it('recommends advisory review text and a structured composer command for direct
     $action = app(BuildSafeRecommendationAction::class);
     $finding = recommendationVulnerabilityFinding(Ecosystem::Composer, isDirect: true);
 
-    expect($action->forVulnerability($finding))->toBe('Review the advisory before updating.')
-        ->and($action->commandForVulnerabilityFields(
-            isDirect: $finding->isDirect,
-            packageName: $finding->packageName,
+    expect($action->forVulnerability($finding->isDirect, $finding->packageName))->toBe('Review the advisory before updating.')
+        ->and($action->commandForVulnerability(
             ecosystem: $finding->ecosystem,
-        ))->toBe('composer update laravel/framework --with-dependencies');
+            packageName: $finding->packageName,
+            isDirect: $finding->isDirect,
+        ))->toBe('composer update laravel/framework --with-dependencies')
+        ->and($action->alternativeCommandsForVulnerability(
+            ecosystem: $finding->ecosystem,
+            packageName: $finding->packageName,
+            isDirect: $finding->isDirect,
+            requiredBy: ['acme/parent'],
+        ))->toBe([]);
 });
 
 it('recommends reviewing the parent package for transitive vulnerabilities', function (): void {
     $recommendation = app(BuildSafeRecommendationAction::class)->forVulnerability(
-        recommendationVulnerabilityFinding(Ecosystem::Composer, isDirect: false),
+        isDirect: false,
+        packageName: 'laravel/framework',
     );
 
-    expect($recommendation)->toBe('Review which direct dependency requires laravel/framework before updating. Prefer updating the parent package rather than editing the lock file manually.');
+    expect($recommendation)->toBe('laravel/framework is a transitive dependency. Try the suggested command first, and if it cannot reach a patched version, update the package that requires it rather than editing the lock file manually.');
 });
 
 it('recommends changelog review text and a structured node runner command for direct outdated packages', function (): void {
@@ -43,13 +50,64 @@ it('uses the detected node runner for direct npm vulnerability commands', functi
     $action = app(BuildSafeRecommendationAction::class);
     $finding = recommendationVulnerabilityFinding(Ecosystem::Npm, isDirect: true);
 
-    expect($action->forVulnerability(finding: $finding))->toBe('Review the advisory before updating.')
-        ->and($action->commandForVulnerabilityFields(
-            isDirect: $finding->isDirect,
-            packageName: $finding->packageName,
-            ecosystem: $finding->ecosystem,
-            nodeRunner: NodeRunner::Bun,
-        ))->toBe('bun update laravel/framework');
+    expect($action->commandForVulnerability(
+        ecosystem: $finding->ecosystem,
+        packageName: $finding->packageName,
+        isDirect: $finding->isDirect,
+        nodeRunner: NodeRunner::Bun,
+    ))->toBe('bun update laravel/framework');
+});
+
+it('updates a transitive composer vulnerability directly and offers parent updates as alternatives', function (): void {
+    $action = app(BuildSafeRecommendationAction::class);
+
+    expect($action->commandForVulnerability(
+        ecosystem: Ecosystem::Composer,
+        packageName: 'symfony/http-kernel',
+        isDirect: false,
+        requiredBy: ['laravel/framework', 'acme/package'],
+    ))->toBe('composer update symfony/http-kernel')
+        ->and($action->alternativeCommandsForVulnerability(
+            ecosystem: Ecosystem::Composer,
+            packageName: 'symfony/http-kernel',
+            isDirect: false,
+            requiredBy: ['laravel/framework', 'acme/package'],
+        ))->toBe([
+            'composer update laravel/framework --with-dependencies',
+            'composer update acme/package --with-dependencies',
+        ]);
+});
+
+it('uses the node runner fix command for transitive npm vulnerabilities', function (NodeRunner $nodeRunner, ?string $command, array $alternatives): void {
+    $action = app(BuildSafeRecommendationAction::class);
+
+    expect($action->commandForVulnerability(
+        ecosystem: Ecosystem::Npm,
+        packageName: 'rollup',
+        isDirect: false,
+        requiredBy: ['vite', 'vitest'],
+        nodeRunner: $nodeRunner,
+    ))->toBe($command)
+        ->and($action->alternativeCommandsForVulnerability(
+            ecosystem: Ecosystem::Npm,
+            packageName: 'rollup',
+            isDirect: false,
+            requiredBy: ['vite', 'vitest'],
+            nodeRunner: $nodeRunner,
+        ))->toBe($alternatives);
+})->with([
+    'npm' => [NodeRunner::Npm, 'npm audit fix', ['npm update vite', 'npm update vitest']],
+    'yarn' => [NodeRunner::Yarn, 'yarn up -R rollup', ['yarn up vite', 'yarn up vitest']],
+    'pnpm' => [NodeRunner::Pnpm, 'pnpm update vite', ['pnpm update vitest']],
+]);
+
+it('has no command for a transitive bun vulnerability without known parents', function (): void {
+    expect(app(BuildSafeRecommendationAction::class)->commandForVulnerability(
+        ecosystem: Ecosystem::Npm,
+        packageName: 'rollup',
+        isDirect: false,
+        nodeRunner: NodeRunner::Bun,
+    ))->toBeNull();
 });
 
 it('recommends reviewing the parent package for transitive outdated packages', function (): void {

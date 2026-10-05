@@ -48,5 +48,25 @@ it('returns the latest scan via api', function (): void {
 it('returns null scan when no scans exist', function (): void {
     $this->getJson('/radar/api/scans/latest')
         ->assertOk()
-        ->assertJsonPath('scan', null);
+        ->assertJsonPath('scan', null)
+        ->assertJsonPath('status.pending', false);
+});
+
+it('normalises stored findings and includes scan warnings', function (): void {
+    RadarScan::factory()->create([
+        'payload' => [
+            'vulnerabilities' => [
+                ['package_name' => 'laravel/framework', 'severity' => 'high'],
+            ],
+            'warnings' => [
+                ['ecosystem' => 'npm', 'check' => 'vulnerabilities', 'message' => '`npm audit --json` timed out after 60s.'],
+            ],
+        ],
+    ]);
+
+    $this->getJson('/radar/api/scans/latest')
+        ->assertOk()
+        ->assertJsonPath('scan.vulnerabilities.0.title', null)
+        ->assertJsonPath('scan.vulnerabilities.0.alternative_commands', [])
+        ->assertJsonPath('scan.warnings.0.message', '`npm audit --json` timed out after 60s.');
 });

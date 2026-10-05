@@ -42,18 +42,18 @@ final class ScanCommand extends Command
 
         $scan = $this->runScan->execute($basepath);
 
-        $payload = $scan->payload;
-        $outdated = $payload['outdated'] ?? [];
-        $abandoned = $payload['abandoned'] ?? [];
-
         $this->components->info(sprintf(
             'Stored Radar scan %s with %d package(s), %d vulnerability finding(s), %d outdated package finding(s), and %d abandoned package finding(s).',
             $scan->id,
             $scan->package_count,
             $scan->vulnerability_count,
-            is_countable($outdated) ? count($outdated) : 0,
-            is_countable($abandoned) ? count($abandoned) : 0,
+            count($scan->outdated()),
+            count($scan->abandoned()),
         ));
+
+        foreach ($scan->warnings() as $warning) {
+            $this->components->warn(sprintf('[%s %s] %s', $warning->ecosystem->value, $warning->check->value, $warning->message));
+        }
 
         return self::SUCCESS;
     }
