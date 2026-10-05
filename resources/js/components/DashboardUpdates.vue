@@ -21,7 +21,7 @@ defineProps<{
       title="Updates"
       subtitle="Outdated direct dependencies found during the latest scan."
       :count="outdatedPackages.length + ' outdated'"
-      count-color="warning"
+      :count-color="outdatedPackages.length ? 'warning' : 'neutral'"
     >
       <template #icon>
         <svg

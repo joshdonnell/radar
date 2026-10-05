@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar\Actions;
 
+use JoshDonnell\Radar\Concerns\IndexesPackages;
 use JoshDonnell\Radar\Concerns\ReadsJsonFiles;
 use JoshDonnell\Radar\Data\AbandonedPackageFindingData;
 use JoshDonnell\Radar\Data\PackageData;
@@ -11,6 +12,7 @@ use JoshDonnell\Radar\Enums\Ecosystem;
 
 final readonly class DetectAbandonedComposerPackagesAction
 {
+    use IndexesPackages;
     use ReadsJsonFiles;
 
     /**

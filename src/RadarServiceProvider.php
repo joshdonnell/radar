@@ -9,6 +9,7 @@ use JoshDonnell\Radar\Commands\ClearCommand;
 use JoshDonnell\Radar\Commands\NotifyCommand;
 use JoshDonnell\Radar\Commands\ScanCommand;
 use JoshDonnell\Radar\Commands\UpgradeCommand;
+use JoshDonnell\Radar\Support\ReadOnlyCommandRunner;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -24,6 +25,11 @@ final class RadarServiceProvider extends PackageServiceProvider
         $dashboardEnabled = $this->app->bound('env') ? ! $this->app->isProduction() : true;
 
         config()->set('radar.dashboard.enabled', $dashboardEnabled);
+    }
+
+    public function packageRegistered(): void
+    {
+        $this->app->scoped(ReadOnlyCommandRunner::class);
     }
 
     public function packageBooted(): void
@@ -80,7 +86,8 @@ final class RadarServiceProvider extends PackageServiceProvider
         $event = $schedule
             ->command('radar:notify --scan')
             ->dailyAt(is_string($time) && $time !== '' ? $time : '02:00')
-            ->withoutOverlapping();
+            ->withoutOverlapping()
+            ->onOneServer();
 
         if (is_string($timezone) && $timezone !== '') {
             $event->timezone($timezone);

@@ -17,5 +17,7 @@ Route::middleware(Config::routeMiddleware())
     ->group(function (): void {
         Route::get('/', DashboardController::class)->name('radar.dashboard');
         Route::get('/api/scans/latest', LatestScanApiController::class)->name('radar.api.scans.latest');
-        Route::post('/api/scans', RunScanApiController::class)->name('radar.api.scans.run');
+        Route::post('/api/scans', RunScanApiController::class)
+            ->middleware('throttle:10,1')
+            ->name('radar.api.scans.run');
     });

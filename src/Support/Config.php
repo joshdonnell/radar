@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar\Support;
 
+use JoshDonnell\Radar\Enums\VulnerabilitySeverity;
 use JoshDonnell\Radar\Http\Middleware\Authorize;
 
 final class Config
@@ -54,6 +55,56 @@ final class Config
         }
 
         return $middleware;
+    }
+
+    /** @return list<string> */
+    public static function notificationMailRecipients(): array
+    {
+        $recipients = config('radar.notifications.routes.mail', []);
+
+        if (is_string($recipients)) {
+            $recipients = explode(',', $recipients);
+        }
+
+        if (! is_array($recipients)) {
+            return [];
+        }
+
+        $recipients = array_map(
+            static fn (mixed $recipient): string => is_string($recipient) ? mb_trim($recipient) : '',
+            $recipients,
+        );
+
+        return array_values(array_filter($recipients, static fn (string $recipient): bool => $recipient !== ''));
+    }
+
+    public static function notificationSlackWebhookUrl(): ?string
+    {
+        $webhookUrl = config('radar.notifications.routes.slack');
+
+        return is_string($webhookUrl) && $webhookUrl !== '' ? $webhookUrl : null;
+    }
+
+    public static function notificationMinimumSeverity(): VulnerabilitySeverity
+    {
+        $severity = config('radar.notifications.min_severity', VulnerabilitySeverity::Low->value);
+
+        return VulnerabilitySeverity::fromThreshold(is_string($severity) ? $severity : null)
+            ?? VulnerabilitySeverity::Low;
+    }
+
+    public static function queueConnection(): ?string
+    {
+        $connection = config('radar.queue.connection');
+
+        return is_string($connection) && $connection !== '' ? $connection : null;
+    }
+
+    public static function queueName(): ?string
+    {
+        $queue = config('radar.queue.name');
+
+        return is_string($queue) && $queue !== '' ? $queue : null;
     }
 
     private static function penaltyCap(string $key, int $default): int

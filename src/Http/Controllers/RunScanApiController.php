@@ -5,23 +5,26 @@ declare(strict_types=1);
 namespace JoshDonnell\Radar\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use JoshDonnell\Radar\Actions\RunScanAction;
-use JoshDonnell\Radar\Data\RadarScanData;
+use JoshDonnell\Radar\Jobs\RunScanJob;
+use JoshDonnell\Radar\Support\Config;
+use JoshDonnell\Radar\Support\ScanStatus;
+use Symfony\Component\HttpFoundation\Response;
 
 final readonly class RunScanApiController
 {
-    public function __construct(
-        private RunScanAction $runScan,
-    ) {}
-
-    public function __invoke(): JsonResponse
+    public function __invoke(ScanStatus $scanStatus): JsonResponse
     {
-        $scan = $this->runScan->execute(
-            basepath: base_path(),
-        );
+        if (! $scanStatus->isPending()) {
+            $scanStatus->markQueued();
 
-        return response()->json([
-            'scan' => RadarScanData::fromModel($scan)->toArray(),
-        ]);
+            RunScanJob::dispatch(base_path())
+                ->onConnection(Config::queueConnection())
+                ->onQueue(Config::queueName());
+        }
+
+        return response()->json(
+            ['status' => $scanStatus->toArray()],
+            Response::HTTP_ACCEPTED,
+        );
     }
 }

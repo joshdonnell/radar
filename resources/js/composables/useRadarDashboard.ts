@@ -1,4 +1,5 @@
-import { computed, inject, provide, ref } from 'vue'
+import { useTitle } from '@vueuse/core'
+import { computed, inject, provide, shallowRef, triggerRef } from 'vue'
 import type { InjectionKey } from 'vue'
 import { usePackageFilter } from '~/composables/usePackageFilter'
 import { useScanData } from '~/composables/useScanData'
@@ -17,25 +18,43 @@ export const dashboardSections = [
 ] as const
 
 function createRadarDashboard(config: RadarConfig) {
-  const sectionElements = ref<Record<string, HTMLElement | null>>({})
+  // Section elements are registered from template ref callbacks, which run
+  // during render. Keeping them in a plain map (and signalling changes with
+  // triggerRef) stops that render from depending on the state it writes.
+  const sectionElements = new Map<string, HTMLElement | null>()
+  const sectionsChanged = shallowRef(0)
 
-  const { scan, loading, scanning, runScan } = useScanData(config)
+  const { scan, loading, loadError, scanning, scanStalled, runScan, reload } =
+    useScanData(config)
   const packageFilter = usePackageFilter(scan)
   const packageBreakdown = computed(() =>
     buildPackageBreakdown(scan.value?.packages ?? []),
   )
 
-  const { activeSection } = useSectionObserver(
-    () => dashboardSections.map((id) => sectionElements.value[id] ?? null),
-    dashboardSections[0],
+  useTitle(
+    computed(() => {
+      const count = scan.value?.vulnerability_count ?? 0
+      const title = `Radar | ${config.appName}`
+
+      return count > 0 ? `(${count}) ${title}` : title
+    }),
   )
 
+  const { activeSection } = useSectionObserver(() => {
+    void sectionsChanged.value
+
+    return dashboardSections.map((id) => sectionElements.get(id) ?? null)
+  }, dashboardSections[0])
+
   const registerSection = (id: string, element: HTMLElement | null) => {
-    sectionElements.value = { ...sectionElements.value, [id]: element }
+    if (sectionElements.get(id) === element) return
+
+    sectionElements.set(id, element)
+    triggerRef(sectionsChanged)
   }
 
   const scrollToSection = (id: string) => {
-    const element = sectionElements.value[id]
+    const element = sectionElements.get(id)
 
     if (!element) return
 
@@ -54,10 +73,14 @@ function createRadarDashboard(config: RadarConfig) {
   }
 
   return {
+    config,
     scan,
     loading,
+    loadError,
     scanning,
+    scanStalled,
     runScan,
+    reload,
     packageBreakdown,
     activeSection,
     registerSection,

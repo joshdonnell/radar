@@ -11,7 +11,7 @@ beforeEach(function (): void {
 });
 
 it('detects npm vulnerabilities', function (): void {
-    $findings = app(DetectNpmVulnerabilitiesAction::class)->execute($this->basepath, $this->packages);
+    $findings = app(DetectNpmVulnerabilitiesAction::class)->execute($this->basepath, $this->packages)->findings;
 
     expect($findings)->toHaveCount(2);
 
@@ -22,6 +22,7 @@ it('detects npm vulnerabilities', function (): void {
         'installed_version' => '7.0.1',
         'severity' => 'high',
         'advisory_id' => 'npm-vite-1001',
+        'title' => 'Fixture Vite advisory',
         'cve' => null,
         'affected_versions' => '<7.0.2',
         'patched_version' => null,
@@ -29,6 +30,7 @@ it('detects npm vulnerabilities', function (): void {
         'is_direct' => true,
         'recommendation' => 'Review the advisory before updating.',
         'suggested_command' => 'npm update vite',
+        'alternative_commands' => [],
         'required_by' => [],
     ]);
 
@@ -37,8 +39,8 @@ it('detects npm vulnerabilities', function (): void {
         'package_name' => 'rollup',
         'severity' => 'medium',
         'is_direct' => false,
-        'recommendation' => 'Review which direct dependency requires rollup before updating. Prefer updating the parent package rather than editing the lock file manually.',
-        'suggested_command' => null,
+        'recommendation' => 'rollup is a transitive dependency. Try the suggested command first, and if it cannot reach a patched version, update the package that requires it rather than editing the lock file manually.',
+        'suggested_command' => 'npm audit fix',
     ]);
 });
 
@@ -50,11 +52,11 @@ it('matches duplicate npm package vulnerabilities by audit nodes', function (): 
     $nestedFindings = app(DetectNpmVulnerabilitiesAction::class)->execute(
         basepath: __DIR__.'/../Fixtures/npm-audit-nested-duplicate-package-version',
         packages: $packages,
-    );
+    )->findings;
     $directFindings = app(DetectNpmVulnerabilitiesAction::class)->execute(
         basepath: __DIR__.'/../Fixtures/npm-audit-direct-duplicate-package-version',
         packages: $packages,
-    );
+    )->findings;
 
     expect($nestedFindings)->toHaveCount(1)
         ->and($nestedFindings[0]->toArray())->toMatchArray([
@@ -62,8 +64,8 @@ it('matches duplicate npm package vulnerabilities by audit nodes', function (): 
             'package_name' => 'vite',
             'installed_version' => '6.0.0',
             'is_direct' => false,
-            'recommendation' => 'Review which direct dependency requires vite before updating. Prefer updating the parent package rather than editing the lock file manually.',
-            'suggested_command' => null,
+            'recommendation' => 'vite is a transitive dependency. Try the suggested command first, and if it cannot reach a patched version, update the package that requires it rather than editing the lock file manually.',
+            'suggested_command' => 'npm audit fix',
             'required_by' => ['other-tool'],
         ])
         ->and($directFindings)->toHaveCount(1)
@@ -78,10 +80,45 @@ it('matches duplicate npm package vulnerabilities by audit nodes', function (): 
 });
 
 it('returns an empty list when npm audit output is missing', function (): void {
-    $findings = app(DetectNpmVulnerabilitiesAction::class)->execute(
+    $result = app(DetectNpmVulnerabilitiesAction::class)->execute(
         __DIR__.'/../Fixtures/missing-project',
         [],
     );
 
-    expect($findings)->toBe([]);
+    expect($result->findings)->toBe([])
+        ->and($result->warnings)->toHaveCount(1)
+        ->and($result->warnings[0]->toArray())->toMatchArray([
+            'ecosystem' => 'npm',
+            'check' => 'vulnerabilities',
+        ])
+        ->and($result->warnings[0]->message)->toContain('`npm audit --json` could not be run');
+});
+
+it('keeps transitive advisories for packages missing from a pnpm inventory', function (): void {
+    $basepath = __DIR__.'/../Fixtures/pnpm-transitive-audit';
+    $packages = app(ParseNpmPackagesAction::class)->execute($basepath);
+
+    $findings = app(DetectNpmVulnerabilitiesAction::class)->execute($basepath, $packages)->findings;
+
+    expect($findings)->toHaveCount(1)
+        ->and($findings[0]->toArray())->toMatchArray([
+            'id' => 'npm-esbuild-1100',
+            'package_name' => 'esbuild',
+            'installed_version' => '0.24.2',
+            'severity' => 'medium',
+            'title' => 'Fixture esbuild advisory',
+            'is_direct' => false,
+            'suggested_command' => null,
+        ]);
+});
+
+it('warns instead of reporting a clean audit for bun projects', function (): void {
+    $basepath = __DIR__.'/../Fixtures/bun-project';
+    $packages = app(ParseNpmPackagesAction::class)->execute($basepath);
+
+    $result = app(DetectNpmVulnerabilitiesAction::class)->execute($basepath, $packages);
+
+    expect($result->findings)->toBe([])
+        ->and($result->warnings)->toHaveCount(1)
+        ->and($result->warnings[0]->message)->toBe('Radar cannot audit Bun projects yet, so Node packages were not checked for vulnerabilities.');
 });

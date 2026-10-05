@@ -11,7 +11,7 @@ beforeEach(function (): void {
 });
 
 it('detects outdated direct npm packages', function (): void {
-    $findings = app(DetectOutdatedNpmPackagesAction::class)->execute($this->basepath, $this->packages);
+    $findings = app(DetectOutdatedNpmPackagesAction::class)->execute($this->basepath, $this->packages)->findings;
 
     expect($findings)->toHaveCount(2);
 
@@ -41,10 +41,30 @@ it('detects outdated direct npm packages', function (): void {
 });
 
 it('returns an empty list when npm outdated output is missing', function (): void {
-    $findings = app(DetectOutdatedNpmPackagesAction::class)->execute(
+    $result = app(DetectOutdatedNpmPackagesAction::class)->execute(
         __DIR__.'/../Fixtures/missing-project',
         [],
     );
 
-    expect($findings)->toBe([]);
+    expect($result->findings)->toBe([])
+        ->and($result->warnings)->toHaveCount(1)
+        ->and($result->warnings[0]->toArray())->toMatchArray([
+            'ecosystem' => 'npm',
+            'check' => 'outdated',
+        ])
+        ->and($result->warnings[0]->message)->toContain('`npm outdated --json` could not be run');
+});
+
+it('warns instead of reporting no updates for bun projects', function (): void {
+    $basepath = __DIR__.'/../Fixtures/bun-project';
+    $packages = app(ParseNpmPackagesAction::class)->execute($basepath);
+
+    $result = app(DetectOutdatedNpmPackagesAction::class)->execute($basepath, $packages);
+
+    expect($result->findings)->toBe([])
+        ->and($result->warnings[0]->toArray())->toBe([
+            'ecosystem' => 'npm',
+            'check' => 'outdated',
+            'message' => 'Radar cannot check Bun projects for outdated packages yet.',
+        ]);
 });

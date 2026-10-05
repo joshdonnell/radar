@@ -5,45 +5,63 @@ declare(strict_types=1);
 namespace JoshDonnell\Radar\Actions;
 
 use JoshDonnell\Radar\Concerns\ClassifiesUpdateTypes;
+use JoshDonnell\Radar\Concerns\IndexesPackages;
+use JoshDonnell\Radar\Concerns\ReadsArrayValues;
 use JoshDonnell\Radar\Concerns\ReadsJsonFiles;
-use JoshDonnell\Radar\Concerns\RunsReadOnlyCommands;
+use JoshDonnell\Radar\Data\DetectionResultData;
 use JoshDonnell\Radar\Data\OutdatedPackageFindingData;
 use JoshDonnell\Radar\Data\PackageData;
 use JoshDonnell\Radar\Enums\Ecosystem;
+use JoshDonnell\Radar\Enums\ScanCheck;
+use JoshDonnell\Radar\Exceptions\CommandFailedException;
+use JoshDonnell\Radar\Support\ReadOnlyCommandRunner;
 
 final readonly class DetectOutdatedComposerPackagesAction
 {
     use ClassifiesUpdateTypes;
+    use IndexesPackages;
+    use ReadsArrayValues;
     use ReadsJsonFiles;
-    use RunsReadOnlyCommands;
+
+    private const array COMMAND = ['composer', 'outdated', '--direct', '--format=json'];
 
     public function __construct(
         private BuildSafeRecommendationAction $buildSafeRecommendation,
+        private ReadOnlyCommandRunner $commandRunner,
     ) {}
+
+    public function prepare(string $basepath): void
+    {
+        if ($this->hasReportFile($basepath)) {
+            return;
+        }
+
+        $this->commandRunner->start(self::COMMAND, $basepath);
+    }
 
     /**
      * @param  list<PackageData>  $packages
-     * @return list<OutdatedPackageFindingData>
+     * @return DetectionResultData<OutdatedPackageFindingData>
      */
-    public function execute(string $basepath, array $packages): array
+    public function execute(string $basepath, array $packages): DetectionResultData
     {
-        /** @var array{installed?: list<array<string, mixed>>} $outdatedReport */
-        $outdatedReport = $this->readJson($basepath.'/composer-outdated.json');
-
-        if ($outdatedReport === []) {
-            /** @var array{installed?: list<array<string, mixed>>} $outdatedReport */
-            $outdatedReport = $this->readCommandJson(['composer', 'outdated', '--direct', '--format=json'], $basepath);
+        try {
+            $outdatedReport = $this->hasReportFile($basepath)
+                ? $this->readJson($this->reportFile($basepath))
+                : $this->commandRunner->json(self::COMMAND, $basepath);
+        } catch (CommandFailedException $commandFailedException) {
+            return DetectionResultData::failed(Ecosystem::Composer, ScanCheck::Outdated, $commandFailedException->getMessage());
         }
 
         $directPackages = $this->directPackagesByName($packages);
         $findings = [];
 
-        foreach ($outdatedReport['installed'] ?? [] as $outdatedPackage) {
-            $name = $outdatedPackage['name'] ?? null;
-            $currentVersion = $outdatedPackage['version'] ?? null;
-            $latestVersion = $outdatedPackage['latest'] ?? null;
+        foreach (self::recordListValue($outdatedReport, 'installed') as $outdatedPackage) {
+            $name = self::stringValue($outdatedPackage, 'name');
+            $currentVersion = self::stringValue($outdatedPackage, 'version');
+            $latestVersion = self::stringValue($outdatedPackage, 'latest');
 
-            if (! is_string($name)) {
+            if ($name === null) {
                 continue;
             }
 
@@ -53,16 +71,16 @@ final readonly class DetectOutdatedComposerPackagesAction
                 continue;
             }
 
-            if (! is_string($currentVersion)) {
+            if ($currentVersion === null) {
                 continue;
             }
 
-            if (! is_string($latestVersion)) {
+            if ($latestVersion === null) {
                 continue;
             }
 
             $finding = new OutdatedPackageFindingData(
-                id: 'composer-'.$name.'-outdated',
+                id: "composer-{$name}-outdated",
                 ecosystem: Ecosystem::Composer,
                 packageName: $name,
                 currentVersion: mb_ltrim($currentVersion, 'v'),
@@ -77,25 +95,16 @@ final readonly class DetectOutdatedComposerPackagesAction
             );
         }
 
-        return $findings;
+        return new DetectionResultData($findings);
     }
 
-    /**
-     * @param  list<PackageData>  $packages
-     * @return array<string, PackageData>
-     */
-    private function directPackagesByName(array $packages): array
+    private function hasReportFile(string $basepath): bool
     {
-        $directPackages = [];
+        return file_exists($this->reportFile($basepath));
+    }
 
-        foreach ($packages as $package) {
-            if ($package->isDirect !== true) {
-                continue;
-            }
-
-            $directPackages[$package->name] = $package;
-        }
-
-        return $directPackages;
+    private function reportFile(string $basepath): string
+    {
+        return "{$basepath}/composer-outdated.json";
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar\Concerns;
 
-use JoshDonnell\Radar\Data\PackageData;
 use JoshDonnell\Radar\Enums\DependencyType;
 
 trait ReadsJsonFiles
@@ -30,29 +29,6 @@ trait ReadsJsonFiles
 
         /** @var array<string, mixed> $decoded */
         return $decoded;
-    }
-
-    /** @param array<string, mixed> $values */
-    private function stringValue(array $values, string $key): ?string
-    {
-        $value = $values[$key] ?? null;
-
-        return is_string($value) ? $value : null;
-    }
-
-    /**
-     * @param  list<PackageData>  $packages
-     * @return array<string, PackageData>
-     */
-    private function packagesByName(array $packages): array
-    {
-        $mapped = [];
-
-        foreach ($packages as $package) {
-            $mapped[$package->name] = $package;
-        }
-
-        return $mapped;
     }
 
     /**

@@ -10,7 +10,7 @@ it('registers the dashboard outside production', function (): void {
 
     $this->get('/radar')
         ->assertOk()
-        ->assertSee('Dashboard | Laravel Radar')
+        ->assertSee('Radar | '.config('app.name'))
         ->assertDontSee('window.Radar')
         ->assertSee('id="radar"', false);
 });
@@ -25,7 +25,7 @@ it('allows dashboard access when the configured gate passes', function (): void 
 
     $this->get('/radar')
         ->assertOk()
-        ->assertSee('Dashboard | Laravel Radar')
+        ->assertSee('Radar | '.config('app.name'))
         ->assertDontSee('window.Radar')
         ->assertSee('id="radar"', false);
 });

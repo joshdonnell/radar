@@ -1,6 +1,6 @@
 Laravel Radar
 
-{{ $total }} {{ $pluralizedVulnerability }} detected
+{{ $total }} new {{ $pluralizedVulnerability }} detected
 
 Radar detected vulnerable dependencies that may expose this application to known exploits and should be reviewed.
 
@@ -8,7 +8,7 @@ Breakdown: {{ $counts['critical'] }} critical, {{ $counts['high'] }} high, {{ $c
 
 Affected packages:
 @foreach ($vulnerabilities as $vulnerability)
-- {{ $vulnerability->packageName }} {{ $vulnerability->installedVersion }} — {{ $vulnerability->severity->value }} severity ({{ $vulnerability->advisoryId }})
+- {{ $vulnerability->packageName }} {{ $vulnerability->installedVersion }} — {{ $vulnerability->severity->value }} severity ({{ $vulnerability->advisoryId }})@if ($vulnerability->title): {{ $vulnerability->title }}@endif
 @endforeach
 @if ($remainingCount > 0)
 ...and {{ $remainingCount }} more.

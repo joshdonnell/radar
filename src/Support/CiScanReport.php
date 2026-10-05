@@ -4,159 +4,121 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar\Support;
 
+use Illuminate\Console\Command;
+use JoshDonnell\Radar\Data\ScanWarningData;
+use JoshDonnell\Radar\Data\VulnerabilityFindingData;
+use JoshDonnell\Radar\Enums\ScanCheck;
 use JoshDonnell\Radar\Enums\VulnerabilitySeverity;
 use JoshDonnell\Radar\Models\RadarScan;
 
 final readonly class CiScanReport
 {
-    private string $severityThreshold;
+    /** @var list<VulnerabilityFindingData> */
+    private array $vulnerabilities;
 
-    private int $vulnerabilityCount;
+    /** @var list<VulnerabilityFindingData> */
+    private array $failingVulnerabilities;
 
-    /** @var list<string> */
-    private array $vulnerabilityLines;
+    /** @var list<ScanWarningData> */
+    private array $auditWarnings;
 
-    private int $failingVulnerabilityCount;
-
-    public function __construct(RadarScan $scan, VulnerabilitySeverity $severityThreshold)
+    public function __construct(RadarScan $scan, private VulnerabilitySeverity $severityThreshold)
     {
-        $vulnerabilities = $this->payloadList($scan, 'vulnerabilities');
-
-        $this->severityThreshold = $severityThreshold->value;
-        $this->vulnerabilityCount = count($vulnerabilities);
-        $this->vulnerabilityLines = array_map(
-            fn (array $vulnerability): string => $this->vulnerabilityLine($vulnerability, $severityThreshold),
-            $vulnerabilities,
-        );
-        $this->failingVulnerabilityCount = collect($vulnerabilities)
-            ->filter(fn (array $vulnerability): bool => $this->vulnerabilityFailsThreshold($vulnerability, $severityThreshold))
-            ->count();
+        $this->vulnerabilities = $scan->vulnerabilities();
+        $this->failingVulnerabilities = array_values(array_filter(
+            $this->vulnerabilities,
+            $this->fails(...),
+        ));
+        $this->auditWarnings = $scan->warningsFor(ScanCheck::Vulnerabilities);
     }
 
+    /**
+     * A failing vulnerability fails the build. An audit that could not run is
+     * reported as invalid rather than passing, because a clean result cannot
+     * be trusted.
+     */
     public function exitCode(): int
     {
-        return $this->failingVulnerabilityCount > 0 ? 1 : 0;
+        if ($this->failingVulnerabilities !== []) {
+            return Command::FAILURE;
+        }
+
+        if ($this->auditWarnings !== []) {
+            return Command::INVALID;
+        }
+
+        return Command::SUCCESS;
     }
 
     /** @return list<string> */
     public function lines(): array
     {
         $lines = [
-            sprintf(
-                'Radar scan completed with %d vulnerability finding(s).',
-                $this->vulnerabilityCount,
-            ),
+            sprintf('Radar scan completed with %d vulnerability finding(s).', count($this->vulnerabilities)),
             sprintf(
                 'CI severity threshold: %s. Failing vulnerability finding(s): %d.',
-                $this->severityThreshold,
-                $this->failingVulnerabilityCount,
+                $this->severityThreshold->value,
+                count($this->failingVulnerabilities),
+            ),
+            ...array_map(
+                static fn (ScanWarningData $warning): string => sprintf('[INCOMPLETE] %s audit: %s', $warning->ecosystem->value, $warning->message),
+                $this->auditWarnings,
+            ),
+            ...array_map(
+                $this->vulnerabilityLine(...),
+                $this->vulnerabilities,
             ),
         ];
 
-        if ($this->vulnerabilityCount === 0) {
-            return [
-                ...$lines,
-                'Radar scan passed. No vulnerabilities found.',
-            ];
+        if ($this->failingVulnerabilities !== []) {
+            return $lines;
         }
 
-        $lines = [
+        if ($this->auditWarnings !== []) {
+            return [...$lines, 'Radar scan incomplete. One or more dependency audits could not run.'];
+        }
+
+        if ($this->vulnerabilities === []) {
+            return [...$lines, 'Radar scan passed. No vulnerabilities found.'];
+        }
+
+        return [
             ...$lines,
-            ...$this->vulnerabilityLines,
+            sprintf('Radar scan passed. No vulnerabilities at %s severity or above.', $this->severityThreshold->value),
         ];
-
-        if ($this->failingVulnerabilityCount === 0) {
-            $lines[] = sprintf(
-                'Radar scan passed. No vulnerabilities at %s severity or above.',
-                $this->severityThreshold,
-            );
-        }
-
-        return $lines;
     }
 
-    /** @return list<array<string, mixed>> */
-    private function payloadList(RadarScan $scan, string $key): array
+    private function fails(VulnerabilityFindingData $vulnerability): bool
     {
-        $value = $scan->payload[$key] ?? [];
-
-        if (! is_array($value)) {
-            return [];
-        }
-
-        $items = [];
-
-        foreach ($value as $item) {
-            if (! is_array($item)) {
-                continue;
-            }
-
-            $typedItem = [];
-
-            foreach ($item as $itemKey => $itemValue) {
-                if (! is_string($itemKey)) {
-                    continue;
-                }
-
-                $typedItem[$itemKey] = $itemValue;
-            }
-
-            $items[] = $typedItem;
-        }
-
-        return $items;
+        return $vulnerability->severity->meetsThreshold($this->severityThreshold);
     }
 
-    /** @param array<string, mixed> $vulnerability */
-    private function vulnerabilityFailsThreshold(array $vulnerability, VulnerabilitySeverity $severityThreshold): bool
+    private function vulnerabilityLine(VulnerabilityFindingData $vulnerability): string
     {
-        return $this->severity($vulnerability)->meetsThreshold($severityThreshold);
-    }
+        $level = $this->fails($vulnerability) ? 'ERROR' : 'WARNING';
 
-    /** @param array<string, mixed> $vulnerability */
-    private function vulnerabilityLine(array $vulnerability, VulnerabilitySeverity $severityThreshold): string
-    {
-        $level = $this->vulnerabilityFailsThreshold($vulnerability, $severityThreshold) ? 'ERROR' : 'WARNING';
+        $message = sprintf(
+            '%s %s severity vulnerability found',
+            $vulnerability->packageName,
+            $vulnerability->severity->value,
+        );
 
-        return sprintf('[%s] %s', $level, $this->vulnerabilityMessage($vulnerability));
-    }
-
-    /** @param array<string, mixed> $vulnerability */
-    private function severity(array $vulnerability): VulnerabilitySeverity
-    {
-        return VulnerabilitySeverity::fromAuditSeverity($this->stringValue($vulnerability, 'severity'));
-    }
-
-    /** @param array<string, mixed> $items */
-    private function stringValue(array $items, string $key): ?string
-    {
-        $value = $items[$key] ?? null;
-
-        return is_string($value) && $value !== '' ? $value : null;
-    }
-
-    /** @param array<string, mixed> $vulnerability */
-    private function vulnerabilityMessage(array $vulnerability): string
-    {
-        $packageName = $this->stringValue($vulnerability, 'package_name') ?? 'unknown package';
-        $severity = $this->severity($vulnerability)->value;
-        $message = sprintf('%s %s severity vulnerability found', $packageName, $severity);
-        $cve = $this->stringValue($vulnerability, 'cve');
-        $affectedVersions = $this->stringValue($vulnerability, 'affected_versions');
-        $suggestedCommand = $this->stringValue($vulnerability, 'suggested_command');
-
-        if ($cve !== null) {
-            $message = sprintf('%s. CVE: %s', $message, $cve);
+        if ($vulnerability->title !== null) {
+            $message .= ": {$vulnerability->title}";
         }
 
-        if ($affectedVersions !== null) {
-            $message = sprintf('%s. Affected versions: %s', $message, $affectedVersions);
+        if ($vulnerability->cve !== null) {
+            $message .= ". CVE: {$vulnerability->cve}";
         }
 
-        if ($suggestedCommand !== null) {
-            return sprintf('%s. Suggested command: %s', $message, $suggestedCommand);
+        if ($vulnerability->affectedVersions !== null) {
+            $message .= ". Affected versions: {$vulnerability->affectedVersions}";
         }
 
-        return $message;
+        if ($vulnerability->suggestedCommand !== null) {
+            $message .= ". Suggested command: {$vulnerability->suggestedCommand}";
+        }
+
+        return "[{$level}] {$message}";
     }
 }

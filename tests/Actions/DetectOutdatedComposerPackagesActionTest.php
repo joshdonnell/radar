@@ -11,7 +11,7 @@ beforeEach(function (): void {
 });
 
 it('detects outdated direct composer packages', function (): void {
-    $findings = app(DetectOutdatedComposerPackagesAction::class)->execute($this->basepath, $this->packages);
+    $findings = app(DetectOutdatedComposerPackagesAction::class)->execute($this->basepath, $this->packages)->findings;
 
     expect($findings)->toHaveCount(2);
 
@@ -41,10 +41,16 @@ it('detects outdated direct composer packages', function (): void {
 });
 
 it('returns an empty list when composer outdated output is missing', function (): void {
-    $findings = app(DetectOutdatedComposerPackagesAction::class)->execute(
+    $result = app(DetectOutdatedComposerPackagesAction::class)->execute(
         __DIR__.'/../Fixtures/missing-project',
         [],
     );
 
-    expect($findings)->toBe([]);
+    expect($result->findings)->toBe([])
+        ->and($result->warnings)->toHaveCount(1)
+        ->and($result->warnings[0]->toArray())->toMatchArray([
+            'ecosystem' => 'composer',
+            'check' => 'outdated',
+        ])
+        ->and($result->warnings[0]->message)->toContain('`composer outdated --direct --format=json` could not be run');
 });

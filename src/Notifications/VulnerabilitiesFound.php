@@ -45,7 +45,7 @@ final class VulnerabilitiesFound extends Notification
         return (new SlackMessage())
             ->warning()
             ->content(sprintf(
-                ':rotating_light: *%d vulnerabilit%s detected* in your project dependencies.',
+                ':rotating_light: *%d new vulnerabilit%s detected* in your project dependencies.',
                 $total,
                 $total === 1 ? 'y' : 'ies',
             ))
@@ -90,7 +90,7 @@ final class VulnerabilitiesFound extends Notification
         $total = count($this->notification->vulnerabilities);
 
         $subject = sprintf(
-            '[Radar] %d vulnerabilit%s detected',
+            '[Radar] %d new vulnerabilit%s detected',
             $total,
             $total === 1 ? 'y' : 'ies',
         );

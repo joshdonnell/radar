@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar\Data;
 
+use JoshDonnell\Radar\Concerns\ReadsArrayValues;
 use JoshDonnell\Radar\Enums\DependencyType;
 use JoshDonnell\Radar\Enums\Ecosystem;
 
 final readonly class AbandonedPackageFindingData
 {
+    use ReadsArrayValues;
+
     public function __construct(
         public string $id,
         public Ecosystem $ecosystem,
@@ -19,6 +22,21 @@ final readonly class AbandonedPackageFindingData
         public ?string $replacementPackage = null,
         public ?string $recommendation = null,
     ) {}
+
+    /** @param array<string, mixed> $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            id: self::stringValue($data, 'id') ?? 'unknown-abandoned',
+            ecosystem: Ecosystem::tryFrom(self::stringValue($data, 'ecosystem') ?? '') ?? Ecosystem::Composer,
+            packageName: self::stringValue($data, 'package_name') ?? 'unknown/package',
+            installedVersion: self::stringValue($data, 'installed_version') ?? 'unknown',
+            dependencyType: DependencyType::tryFrom(self::stringValue($data, 'dependency_type') ?? '') ?? DependencyType::Production,
+            isDirect: self::boolValue($data, 'is_direct'),
+            replacementPackage: self::stringValue($data, 'replacement_package'),
+            recommendation: self::stringValue($data, 'recommendation'),
+        );
+    }
 
     /** @return array<string, mixed> */
     public function toArray(): array

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Dashboard from '~/components/Dashboard.vue'
+import RadarToasts from '~/components/RadarToasts.vue'
 import { provideRadarDashboard } from '~/composables/useRadarDashboard'
 import AppSidebar from '~/layouts/Sidebar.vue'
 import AppTopbar from '~/layouts/Topbar.vue'
@@ -21,9 +22,11 @@ const { scan } = provideRadarDashboard(props.radarConfig)
 
       <main class="flex-1">
         <div class="mx-auto w-full max-w-[1180px] px-4 py-6 sm:px-6 lg:px-7">
-          <dashboard />
+          <Dashboard />
         </div>
       </main>
     </div>
+
+    <RadarToasts />
   </div>
 </template>

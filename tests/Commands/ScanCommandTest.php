@@ -50,6 +50,7 @@ it('handles projects without dependency files', function (): void {
             'vulnerabilities' => [],
             'outdated' => [],
             'abandoned' => [],
+            'warnings' => [],
         ]);
 });
 
@@ -76,7 +77,7 @@ it('emits generic CI output and fails when the severity threshold is met', funct
         ->and(Artisan::output())
         ->toContain('Radar scan completed with 4 vulnerability finding(s).')
         ->toContain('CI severity threshold: high. Failing vulnerability finding(s): 2.')
-        ->toContain('[ERROR] laravel/framework high severity vulnerability found. CVE: CVE-2026-1001')
+        ->toContain('[ERROR] laravel/framework high severity vulnerability found: Fixture Laravel advisory. CVE: CVE-2026-1001')
         ->toContain('[WARNING] symfony/console medium severity vulnerability found')
         ->not->toContain('outdated package finding(s)')
         ->not->toContain('abandoned package finding(s)');

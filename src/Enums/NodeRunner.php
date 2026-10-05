@@ -41,4 +41,17 @@ enum NodeRunner: string
             self::Bun => sprintf('bun update %s', $packageName),
         };
     }
+
+    /**
+     * The command that re-resolves a vulnerable transitive package without
+     * touching the parent package's version, when the runner has one.
+     */
+    public function transitiveFixCommand(string $packageName): ?string
+    {
+        return match ($this) {
+            self::Npm => 'npm audit fix',
+            self::Yarn => sprintf('yarn up -R %s', $packageName),
+            self::Pnpm, self::Bun => null,
+        };
+    }
 }

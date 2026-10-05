@@ -22,6 +22,7 @@ class TestCase extends Orchestra
     protected function getEnvironmentSetUp($app): void
     {
         $app->make('config')->set('radar.middleware', [Authorize::class]);
+        $app->make('config')->set('cache.default', 'array');
 
         $this->copyBuiltAssetsToPublicPath();
 
