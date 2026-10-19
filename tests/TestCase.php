@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace JoshDonnell\Radar\Tests;
 
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Schema;
 use JoshDonnell\Radar\Http\Middleware\Authorize;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -24,8 +23,6 @@ class TestCase extends Orchestra
         $app->make('config')->set('radar.middleware', [Authorize::class]);
         $app->make('config')->set('cache.default', 'array');
 
-        $this->copyBuiltAssetsToPublicPath();
-
         Schema::dropAllTables();
 
         $migration = include __DIR__.'/../database/migrations/create_radar_scans_table.php.stub';
@@ -36,20 +33,5 @@ class TestCase extends Orchestra
         }
 
         $runMigration();
-    }
-
-    private function copyBuiltAssetsToPublicPath(): void
-    {
-        $filesystem = new Filesystem();
-        $sourcePath = __DIR__.'/../resources/dist';
-        $targetPath = public_path('vendor/radar');
-
-        $filesystem->deleteDirectory($targetPath);
-
-        if (! $filesystem->isDirectory($sourcePath)) {
-            return;
-        }
-
-        $filesystem->copyDirectory($sourcePath, $targetPath);
     }
 }

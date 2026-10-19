@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use JoshDonnell\Radar\Http\Controllers\AssetController;
 use JoshDonnell\Radar\Http\Controllers\DashboardController;
 use JoshDonnell\Radar\Http\Controllers\LatestScanApiController;
 use JoshDonnell\Radar\Http\Controllers\RunScanApiController;
@@ -16,6 +17,9 @@ Route::middleware(Config::routeMiddleware())
     ->prefix(Config::path())
     ->group(function (): void {
         Route::get('/', DashboardController::class)->name('radar.dashboard');
+        Route::get('/assets/{file}', AssetController::class)
+            ->where('file', '[A-Za-z0-9._-]+')
+            ->name('radar.assets');
         Route::get('/api/scans/latest', LatestScanApiController::class)->name('radar.api.scans.latest');
         Route::post('/api/scans', RunScanApiController::class)
             ->middleware('throttle:10,1')

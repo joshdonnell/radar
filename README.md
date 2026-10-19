@@ -40,7 +40,7 @@ Install Radar with Composer:
 composer require joshdonnell/radar
 ```
 
-Publish Radar's config file, migration, and dashboard assets:
+Publish Radar's config file and migration:
 
 ```bash
 php artisan radar:install
@@ -87,12 +87,13 @@ php artisan radar:install
 php artisan radar:scan
 php artisan radar:notify
 php artisan radar:clear
-php artisan radar:upgrade
 ```
 
 ### `radar:install`
 
-Publishes Radar's config file, migration, and dashboard assets. Run it once after installing the package.
+Publishes Radar's config file and migration. Run it once after installing the package.
+
+Dashboard assets are served directly from the package, so there is nothing to publish or re-publish after upgrading.
 
 ```bash
 php artisan radar:install
@@ -166,14 +167,6 @@ Skip the confirmation prompt:
 
 ```bash
 php artisan radar:clear --force
-```
-
-### `radar:upgrade`
-
-Re-publishes the dashboard assets. Run it after upgrading Radar. The dashboard shows a banner when the published assets are out of date.
-
-```bash
-php artisan radar:upgrade
 ```
 
 ## Dashboard
@@ -368,7 +361,7 @@ Unsupported checks are recorded as scan warnings rather than reported as clean.
 
 - `RADAR_NOTIFICATION_DEDUPE_TTL` (`notifications.dedupe_ttl`) has been removed. Notifications are now sent once per vulnerability. Use `RADAR_NOTIFICATION_REMIND_AFTER` if you want reminders about unresolved vulnerabilities.
 - Dashboard scans now run on the queue. Run a queue worker, or use the `sync` driver.
-- Run `php artisan radar:upgrade` to publish the new dashboard assets.
+- Dashboard assets are now served directly from the package. The `radar:upgrade` command has been removed, and you can delete the `public/vendor/radar` directory along with any `radar:upgrade` calls in your Composer scripts or deploy steps.
 
 ## Testing
 
@@ -385,6 +378,16 @@ npm run test:lint
 npm run test:types
 npm run build
 ```
+
+## Releasing
+
+Releases are created by the `release` workflow, so there is no need to build assets or tag locally. Run it from the Actions tab, or with:
+
+```bash
+gh workflow run release.yml -f version=v0.3.0
+```
+
+The workflow builds the dashboard assets, commits `resources/dist` to `main` if it changed, then tags that commit and publishes a GitHub release with generated notes.
 
 ## License
 

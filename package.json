@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vp build",
-    "dev": "mkdir -p public && echo 'http://localhost:5173' > public/hot && (trap 'rm -f public/hot' EXIT; vp dev)",
+    "dev": "mkdir -p resources/dist && echo 'http://localhost:5173' > resources/dist/hot && (trap 'rm -f resources/dist/hot' EXIT; vp dev)",
     "lint": "vp lint --fix && vp fmt resources/",
     "test:lint": "vp lint --type-aware && vp fmt --check resources/",
     "test:types": "vue-tsc --noEmit"
