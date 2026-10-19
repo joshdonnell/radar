@@ -1,4 +1,4 @@
-@extends('radar::layout')
+@extends('radar::app')
 
 @section('content')
     <script>
