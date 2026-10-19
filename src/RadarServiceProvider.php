@@ -8,7 +8,6 @@ use Illuminate\Console\Scheduling\Schedule;
 use JoshDonnell\Radar\Commands\ClearCommand;
 use JoshDonnell\Radar\Commands\NotifyCommand;
 use JoshDonnell\Radar\Commands\ScanCommand;
-use JoshDonnell\Radar\Commands\UpgradeCommand;
 use JoshDonnell\Radar\Support\ReadOnlyCommandRunner;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -56,17 +55,14 @@ final class RadarServiceProvider extends PackageServiceProvider
                 ClearCommand::class,
                 NotifyCommand::class,
                 ScanCommand::class,
-                UpgradeCommand::class,
             ])
             ->hasViews()
-            ->hasAssets()
             ->hasRoute('web')
             ->hasMigration('create_radar_scans_table')
             ->hasInstallCommand(function (InstallCommand $command): void {
                 $command
                     ->publishConfigFile()
-                    ->publishMigrations()
-                    ->publishAssets();
+                    ->publishMigrations();
             });
     }
 

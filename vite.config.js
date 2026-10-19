@@ -8,6 +8,9 @@ import laravel from "laravel-vite-plugin";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+    // Assets are served from a package route under the configurable dashboard
+    // path, so URLs baked into the CSS (e.g. @font-face src) must be relative.
+    base: "./",
     fmt: {
         semi: false,
         singleQuote: true,
@@ -58,9 +61,7 @@ export default defineConfig({
         vue(),
         laravel({
             input: ["resources/css/app.css", "resources/js/app.ts"],
-            // Radar's assets are published to public/vendor/radar, so asset URLs
-            // baked into the CSS (e.g. @font-face src) must use that base too.
-            buildDirectory: "vendor/radar",
+            hotFile: "resources/dist/hot",
             refresh: true,
         }),
         tailwindcss(),

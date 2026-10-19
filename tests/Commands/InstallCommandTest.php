@@ -7,6 +7,5 @@ it('installs radar scaffolding', function (): void {
         ->assertSuccessful()
         ->expectsOutput('Publishing config...')
         ->expectsOutput('Publishing migrations...')
-        ->expectsOutput('Publishing assets...')
         ->expectsOutput('radar has been installed!');
 });
